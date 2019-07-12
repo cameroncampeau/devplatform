@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <title>NoteSync</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+  </head>
+  <body>
+    <div class="menu">
+      <button id="newNote" class="btn btn-success">
+        <i class="fa fa-plus mr-2"></i> Create Note
+      </button>
+    </div>
+    <h2>Active Notes</h2>
+    <div class="notes p-4 border rounded">
+      <% if (typeof notes != 'undefined') for (var i = 0 ; i < notes.length; i++
+      ) { %>
+      <a class="note" href="/notes/note/<%- notes[i]._id %>">
+        <h4><%- notes[i].name %></h4>
+      </a>
+      <% } %>
+    </div>
+    <script>
+      async function post(url, data) {
+        var args = {
+          body: JSON.stringify(data),
+          headers: {
+            "content-type": "application/json"
+          },
+          method: "post"
+        };
+        return await (await fetch(url, args)).text();
+      }
+      function q(selector) {
+        var query = document.querySelectorAll(selector);
+        if (query.length == 1) return query[0];
+      }
+      q("#newNote").addEventListener("click", async function() {
+        var res = await post("/notes/create", {
+          title: "New Note",
+          owner: "Cameron"
+        });
+        console.log(res);
+      });
+    </script>
+  </body>
+</html>
