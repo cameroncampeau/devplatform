@@ -6,7 +6,18 @@ var router = require("express").Router(),
   crypto = require("crypto"),
   cookieSession = require("cookie-session");
 
-router.use(cookieSession);
+router.use(
+  cookieSession({
+    keys: [
+      new Array(12)
+        .fill(0)
+        .map(e => {
+          return String.fromCharCode(Math.floor(Math.random() * 50 * 90));
+        })
+        .join("")
+    ]
+  })
+);
 function createNote(name, owner) {
   return defaultDB.saveItem("note", { name, owner, content: "" });
 }
@@ -55,7 +66,8 @@ async function init() {
 
 var middleware = {
   auth: function(req, res, next) {
-    return req.session && req.session.user;
+    if (req.session && req.session.user) return next();
+    res.status(401).end("Not Authorized");
   }
 };
 router.get("/", async (req, res) => {
