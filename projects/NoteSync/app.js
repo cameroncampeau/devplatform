@@ -92,6 +92,7 @@ router.post("/create", bodyParser.json(), (req, res) => {
 
 router.get("/note/:id", middleware.auth, async (req, res) => {
   if (!req.params.id) return res.status(400).end("Bad Request");
+  req.session.user = { name: "Default" };
   var note = await getNote(req.params.id);
   ejs.renderFile(
     path.resolve(__dirname + "/views/note.ejs"),
