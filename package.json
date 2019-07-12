@@ -1,0 +1,24 @@
+{
+  "name": "devplatform",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "diskdb": "^0.1.17",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cameroncampeau/devplatform.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cameroncampeau/devplatform/issues"
+  },
+  "homepage": "https://github.com/cameroncampeau/devplatform#readme"
+}
