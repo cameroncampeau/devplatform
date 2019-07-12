@@ -2,25 +2,62 @@ var router = require("express").Router(),
   defaultDB = require("./../../DefaultDB"),
   ejs = require("ejs"),
   path = require("path"),
-  bodyParser = require("body-parser");
+  bodyParser = require("body-parser"),
+  crypto = require("crypto"),
+  cookieSession = require("cookie-session");
 
+router.use(cookieSession);
 function createNote(name, owner) {
-  defaultDB.saveItem("note", { name, owner, content: "" });
+  return defaultDB.saveItem("note", { name, owner, content: "" });
+}
+
+function createUser(name, uname, password) {
+  var cipher = crypto.createCipher("aes-256-cbc", password);
+  password = cipher.update(password, "utf8");
+  password += cipher.final("hex");
+
+  return defaultDB.saveItem("note-user", {
+    name,
+    username: uname,
+    password
+  });
+}
+async function login(username, password) {
+  var cipher = crypto.createDecipher("aes-256-cbc", password);
+  var user = await defaultDB.getCollection("note-user").findOne({ username });
+  if (!user) return null;
+  console.log(password, user.password);
+  try {
+    var dec_password = cipher.update((user && user.password) || "", "hex");
+    dec_password += cipher.final("utf8");
+    return password == dec_password && user;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function getNote(id) {
   return await defaultDB.getCollection("note").findOne({ _id: id });
 }
+
 async function getNotes() {
   return await defaultDB.getCollection("note").find();
 }
+
 async function updateNote(id, content) {
   return await defaultDB.getCollection("note").update({ _id: id }, { content });
 }
-function init() {
+
+async function init() {
   defaultDB.loadCollection("note");
+  defaultDB.loadCollection("note-user");
 }
 
+var middleware = {
+  auth: function(req, res, next) {
+    return req.session && req.session.user;
+  }
+};
 router.get("/", async (req, res) => {
   var notes = await getNotes();
   ejs.renderFile(
@@ -41,7 +78,7 @@ router.post("/create", bodyParser.json(), (req, res) => {
   res.json({ error: false });
 });
 
-router.get("/note/:id", async (req, res) => {
+router.get("/note/:id", middleware.auth, async (req, res) => {
   if (!req.params.id) return res.status(400).end("Bad Request");
   var note = await getNote(req.params.id);
   ejs.renderFile(
