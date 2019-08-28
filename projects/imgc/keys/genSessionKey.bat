@@ -1,0 +1,1 @@
+echo console.log(require("crypto").randomBytes(256).toString('base64')) | node > session.key
