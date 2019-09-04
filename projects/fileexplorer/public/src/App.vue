@@ -20,9 +20,16 @@ export default {
     File
   },
   methods: {
+    getParentPath: function () {
+      for (var i = 1; i <= this.path.length; i++) {
+        if (this.path[this.path.length - i] == "/" || this.path[this.path.length - i] == "\\") {
+          return this.path.substring(0, this.path.length - i);
+        }
+      }
+    },
+
     onFileClick: function a(filename) {
       var file = this.files.find(f => f.name == filename);
-      console.log(file);
       if (!file.directory) return;
       this.path = file.path;
       this.refreshFileList();
@@ -32,7 +39,7 @@ export default {
       window.api.post("/dir", { path: this.path }).then(res => {
         res = JSON.parse(res);
         if (res.error) return;
-        self.files = res.files;
+        self.files = [{name: "..", directory:true, path: this.getParentPath()}].concat(res.files);
       });
     }
   },

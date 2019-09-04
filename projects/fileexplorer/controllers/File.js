@@ -37,7 +37,8 @@ function quicksort(arr, prop) {
 }
 async function getDirContents(path) {
     var files = await fsp.readdir(path);
-    var filearr = [];
+    var filearr = [],
+        folderarr = [];
     await Promise.all(files.map(async f => {
         var filepath = path + "/" + f;
         try {
@@ -46,10 +47,12 @@ async function getDirContents(path) {
         } catch(e) {
             return;
         }
-
-        filearr.push({name: f, path: filepath,  directory: stat.isDirectory(), stats: stat})
+        var file = {name: f, path: filepath,  directory: stat.isDirectory(), stats: stat};
+        if (file.directory) {
+            folderarr.push(file);
+        } else filearr.push(file);
     }))
-    return quicksort(filearr, "name");
+    return quicksort(folderarr, "name").concat(quicksort(filearr, "name"));
 }
 
 module.exports = {getDirContents}
