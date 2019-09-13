@@ -23,7 +23,7 @@
     <div class="videoInfo hidden d-flex justify-content-center align-items-center">
       <form v-on:submit.prevent="downloadVideo">
         <div class="input-group">
-          <input type="text" class="title" />
+          <input type="text" class="title w-100" />
         </div>
         <p class="small desc"></p>
         <img src alt class="thumb" />

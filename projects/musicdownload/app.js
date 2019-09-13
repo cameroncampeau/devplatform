@@ -35,12 +35,15 @@ router.get("/video/:id/info", middleware.auth, async (req, res) => {
     res.status(500).end(e);
   }
 });
+
 router.get("/video", middleware.auth, async (req, res) => {
   res.json(await Youtube.getSavedVideos());
 });
+
 router.get("/video/:title", middleware.auth, (req, res) => {
   res.sendFile(Youtube.getDownloadPath(req.params.title));
 });
+
 router.post("/video/:id/download", middleware.auth, (req, res) => {
   if (!req.body.name) return res.status(400).json("Bad Request");
   Youtube.download(
@@ -54,6 +57,17 @@ router.post("/video/:id/download", middleware.auth, (req, res) => {
       res.status(500).json(err);
     }
   );
+});
+
+router.delete("/video/:title", middleware.auth, async (req, res) => {
+  var videos = await Youtube.getSavedVideos();
+  if (!videos.find(e => e == req.params.title))
+    return res.status(404).json("Not found");
+  await Youtube.deleteDownload(req.params.title).catch(e => {
+    res.status(500).end("Server error");
+    console.error(e);
+  });
+  res.json({ error: false });
 });
 
 module.exports = router;
