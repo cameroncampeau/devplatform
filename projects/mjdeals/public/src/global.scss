@@ -1,0 +1,9 @@
+.clearfix::after {
+  display: block;
+  content: "";
+  clear: both;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
