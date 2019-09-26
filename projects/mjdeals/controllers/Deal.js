@@ -53,4 +53,37 @@ async function upvote(dealID) {
   return true;
 }
 
-module.exports = { create, createCategory, get, getCategories, upvote };
+async function update(
+  dealId,
+  title,
+  description,
+  thumb_url,
+  categories,
+  start,
+  end
+) {
+  var deal = await Deal.findOne({ _id: dealId }).exec();
+  deal.title = title;
+  deal.description = description;
+  deal.thumb_url = thumb_url;
+  deal.categories = categories;
+  deal.date.start = start;
+  deal.date.end = end;
+
+  await deal.save();
+  return deal;
+}
+
+async function remove(dealId) {
+  return await Deal.findByIdAndRemove(dealId).exec();
+}
+
+module.exports = {
+  create,
+  createCategory,
+  get,
+  getCategories,
+  upvote,
+  update,
+  remove
+};

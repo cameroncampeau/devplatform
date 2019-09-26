@@ -7,12 +7,18 @@
       <h4>{{title}}</h4>
       <small class="span">{{upvotes}} votes</small>
       <p>{{description}}</p>
-      <a v-bind:href="url" class="btn btn-primary">View Deal</a>
+      <a v-if="url != '#'" v-bind:href="url" class="btn btn-primary">View Deal</a>
+      <button v-if="url == '#'" @click="select" class="btn btn-primary">Select</button>
     </div>
   </div>
 </template>
 <script>
 export default {
+  methods: {
+    select: function() {
+      this.$emit("selected", { title: this.title, _id: this._id });
+    }
+  },
   props: {
     title: {
       type: String,
@@ -29,7 +35,8 @@ export default {
       }
     },
     url: {
-      type: String
+      type: String,
+      default: "#"
     },
     thumb_url: {
       type: String,
@@ -38,7 +45,11 @@ export default {
     upvotes: {
       type: Number,
       default: 0
+    },
+    _id: {
+      type: String
     }
-  }
+  },
+  mounted: function() {}
 };
 </script>

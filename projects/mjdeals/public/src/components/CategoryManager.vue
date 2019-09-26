@@ -4,10 +4,10 @@
   <div class="border p-3">
     <div class="create">
       <div v-on:click="createWindowOpen = !createWindowOpen">
-        <div v-if="!createWindowOpen">
+        <div v-if="!createWindowOpen" class="cursor-pointer">
           <i class="fa fa-plus text-success mr-2"></i>Create
         </div>
-        <div v-if="createWindowOpen">
+        <div v-if="createWindowOpen" class="cursor-pointer">
           <i class="fa fa-times text-danger mr-2"></i>Close
         </div>
       </div>
@@ -24,7 +24,7 @@
     <div class="selected-categories">
       <div
         v-for="category in selectedCategories"
-        class="category d-inline-block px-3 py-2 bg-success text-white rounded"
+        class="category d-inline-block px-3 py-2 mx-1 my-1 bg-success text-white rounded"
       >{{category.name}}</div>
     </div>
     <div class="category-search">

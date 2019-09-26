@@ -2,7 +2,16 @@ var express = require("express"),
   router = express.Router(),
   Deal = require("../controllers/Deal"),
   bodyParser = require("body-parser");
+
 router.use(bodyParser.json());
+
+function checkArgs(req, argList) {
+  for (var i = 0; i < argList.length; i++) {
+    if (typeof req.body[argList[i]] == "undefined")
+      return console.log(argList[i]) && false;
+  }
+  return true;
+}
 
 router.get("/deal", async (req, res) => {
   var sort = req.query.sort && { [req.query.sort]: -1 };
@@ -35,7 +44,7 @@ router.get("/category", async (req, res) => {
 });
 
 router.post("/deal/:title", async (req, res) => {
-  if (!req.body.start || !req.body.end || !req.body.url)
+  if (!checkArgs(req, ["start", "end", "url"]))
     return res.status(400).json("Bad Request");
   try {
     res.json(
@@ -70,6 +79,44 @@ router.post("/category/:title", async (req, res) => {
   } catch (e) {
     res.status(500).json("Server Error");
     console.error(e);
+  }
+});
+
+router.patch("/deal/:id", async (req, res) => {
+  if (
+    !checkArgs(req, [
+      "title",
+      "description",
+      "thumb_url",
+      "start",
+      "end",
+      "categories",
+      "url"
+    ])
+  )
+    return res.status(404).json("Bad Request");
+  try {
+    var deal = await Deal.update(
+      req.params.id,
+      req.body.title,
+      req.body.description,
+      req.body.thumb_url,
+      req.body.categories,
+      req.body.start,
+      req.body.end
+    );
+    res.json({ deal });
+  } catch (e) {
+    res.status(500).json("Server Error");
+  }
+});
+
+router.delete("/deal/:id", async (req, res) => {
+  try {
+    var deal = await Deal.remove(req.params.id);
+    res.json({ deal });
+  } catch (e) {
+    res.status(500).json("Server Error");
   }
 });
 
