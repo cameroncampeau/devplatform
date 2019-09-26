@@ -1,7 +1,10 @@
 <style lang="scss">
 </style>
 <template>
-  <div id="header" class="position-fixed l-0 t-0 px-4 py-3 border-bottom bg-dark w-100 text-white">
+  <div
+    id="header"
+    class="position-fixed l-0 t-0 px-4 py-3 border-bottom bg-dark w-100 text-white layer-max"
+  >
     <div class="d-inline-block" id="brand">
       <h2 class="font-weight-bold d-inline">TitleBrand</h2>
       <h5 class="font-weight-light d-inline">

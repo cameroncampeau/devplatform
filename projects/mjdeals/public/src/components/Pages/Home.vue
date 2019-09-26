@@ -6,7 +6,8 @@
         <deal-card
           v-for="deal in topDeals"
           v-bind="deal"
-          v-bind:url="'/deal/' + deal._id + '/' + deal.title"
+          v-bind:url="'#'"
+          class="col-6 col-md-4 col-lg-3 bg-dark text-white"
         ></deal-card>
       </div>
     </div>
@@ -32,6 +33,21 @@ export default {
   components: {
     DealCard,
     DealBrowser
+  },
+  data: function() {
+    return {
+      topDeals: []
+    };
+  },
+  methods: {
+    getTopDeals: function() {
+      window.api.get("deal/top").then(res => {
+        this.topDeals = res.deals;
+      });
+    }
+  },
+  mounted: function() {
+    this.getTopDeals();
   }
 };
 </script>

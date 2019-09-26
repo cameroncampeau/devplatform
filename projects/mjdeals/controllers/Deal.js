@@ -40,6 +40,13 @@ async function get(sort, limit = 10, query = {}) {
     .exec();
 }
 
+async function getById(id) {
+  return Deal.findOne({ _id: id })
+    .populate("categories")
+    .lean()
+    .exec();
+}
+
 async function getCategories() {
   return DealCategory.find().exec();
 }
@@ -82,6 +89,7 @@ module.exports = {
   create,
   createCategory,
   get,
+  getById,
   getCategories,
   upvote,
   update,

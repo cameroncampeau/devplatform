@@ -15,6 +15,9 @@ const schema = mongoose.Schema({
   url: {
     type: String
   },
+  thumb_url: {
+    type: "String"
+  },
   categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "DealCategory" }],
   upvotes: {
     type: Number,

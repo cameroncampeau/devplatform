@@ -22,6 +22,16 @@ router.get("/deal", async (req, res) => {
   res.json({ deals });
 });
 
+router.get("/deal/:id", async (req, res) => {
+  try {
+    var deal = await Deal.getById(req.params.id);
+    res.json({ deal });
+  } catch (e) {
+    res.status(500).json("Server Error");
+    console.error(e);
+  }
+});
+
 router.get("/deal/top", async (req, res) => {
   try {
     var limit = req.body.limit || 10;

@@ -35,7 +35,6 @@ export default {
   },
   data: function() {
     return {
-      topDeals: [],
       page: getPage(),
       categories: [],
       selectedCategory: null
@@ -45,11 +44,6 @@ export default {
     browseCategory: function(category) {
       this.selectedCategory = category;
       this.page = "browse";
-    },
-    getTopDeals: function() {
-      window.api.get("deal/top").then(res => {
-        this.topDeals = res.deals;
-      });
     },
     getCategories: function() {
       window.api.get("category").then(res => {
@@ -62,7 +56,6 @@ export default {
   },
   mounted: function() {
     var self = this;
-    this.getTopDeals();
     this.getCategories();
   }
 };

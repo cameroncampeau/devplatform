@@ -4,9 +4,9 @@
   </div>
 </template>
 <script>
-import "../admin/Dashboard";
+import AdminDashboard from "../admin/Dashboard.vue";
 
 export default {
-  components: {}
+  components: { AdminDashboard }
 };
 </script>

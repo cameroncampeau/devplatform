@@ -8,7 +8,7 @@
       <small class="span">{{upvotes}} votes</small>
       <p>{{description}}</p>
       <a v-if="url != '#'" v-bind:href="url" class="btn btn-primary">View Deal</a>
-      <button v-if="url == '#'" @click="select" class="btn btn-primary">Select</button>
+      <router-link v-if="url == '#'" v-bind:to="'deal/' + _id" class="btn btn-primary">Select</router-link>
     </div>
   </div>
 </template>
