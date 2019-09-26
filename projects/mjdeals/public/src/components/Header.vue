@@ -15,16 +15,12 @@
       </h5>
     </div>
     <div class="d-inline-block float-right px-3 py-1">
-      <button
-        @click="navigate('home')"
+      <router-link to="/home" active-class="border-success" class="btn btn-dark border mx-1">Home</router-link>
+      <router-link
+        to="/browse"
+        active-class="border-success"
         class="btn btn-dark border mx-1"
-        v-bind:class="{'border-success': currentPage == 'home', 'border-secondary': currentPage != 'home'}"
-      >Home</button>
-      <button
-        @click="navigate('browse')"
-        class="btn btn-dark border mx-1"
-        v-bind:class="{'border-success': currentPage == 'browse', 'border-secondary': currentPage != 'browse'}"
-      >Browse Deals</button>
+      >Browse Deals</router-link>
     </div>
   </div>
 </template>
