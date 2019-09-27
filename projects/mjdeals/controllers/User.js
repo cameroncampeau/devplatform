@@ -16,7 +16,6 @@ async function create(username, password, name) {
 }
 
 async function login(username, password) {
-  console.log("login", username, password, hash(password));
   return await User.findOne({ username, password: hash(password) })
     .lean()
     .exec();

@@ -92,12 +92,12 @@ router.post("/account/login", async (req, res) => {
     return res.status(400).json("Bad Request");
   try {
     var user = await User.login(req.body.username, req.body.password);
-    console.log(user);
     if (!user) return res.status(404).json("Bad Login");
-    res.session.user = user;
+    req.session.user = user;
     res.json({ user: { ...user, password: undefined } });
   } catch (e) {
     res.status(500).json("Server Error");
+    console.error(e);
   }
 });
 

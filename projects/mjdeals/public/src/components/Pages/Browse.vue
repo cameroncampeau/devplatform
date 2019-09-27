@@ -1,5 +1,5 @@
 <template>
-  <div id="browsePage">
+  <div id="browsePage" class="p-5">
     <deal-browser></deal-browser>
   </div>
 </template>

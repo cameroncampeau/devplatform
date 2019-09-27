@@ -8,14 +8,16 @@
 <template>
   <div id="app" class="bg-lightgreen">
     <site-header v-on:nav="changePage" v-bind:currentPage="page"></site-header>
-    <div class="page-body container p-0 bg-white shadow rounded">
+    <div class="page-body container p-0 bg-white shadow rounded mb-5">
       <router-view></router-view>
     </div>
+    <site-footer></site-footer>
   </div>
 </template>
 
 <script>
 import SiteHeader from "./components/Header.vue";
+import SiteFooter from "./components/Footer.vue";
 
 function getPage() {
   var path = window.location.pathname;
@@ -31,7 +33,8 @@ function getPage() {
 export default {
   name: "app",
   components: {
-    SiteHeader
+    SiteHeader,
+    SiteFooter
   },
   data: function() {
     return {

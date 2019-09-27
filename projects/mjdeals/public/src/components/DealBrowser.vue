@@ -14,7 +14,7 @@
       </select>
     </div>
     <div class="results">
-      <deal-card v-for="deal in deals" v-bind="deal"></deal-card>
+      <deal-card v-for="deal in deals" v-bind="deal" v-bind:url="'#'"></deal-card>
       <p v-if="deals.length == 0" class="text-muted">No deals found</p>
     </div>
   </div>
