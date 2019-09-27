@@ -8,7 +8,7 @@
 <template>
   <div id="app" class="bg-lightgreen">
     <site-header v-on:nav="changePage" v-bind:currentPage="page"></site-header>
-    <div class="page-body container p-5 bg-light shadow rounded">
+    <div class="page-body container p-0 bg-white shadow rounded">
       <router-view></router-view>
     </div>
   </div>

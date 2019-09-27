@@ -6,6 +6,11 @@ const express = require("express"),
   },
   mongoose = require("mongoose");
 
+function setupApp() {
+  app.use("/api", routes.api);
+  app.use("/", routes.public);
+}
+
 // Account cameron.campeau@gmail.com
 const DB_CREDENTIALS = {
   username: "admin",
@@ -23,7 +28,6 @@ mongoose.connect(DB_CREDENTIALS.url, err => {
   if (err) return console.error(err);
 });
 mongoose.connection.on("connected", () => {
+  setupApp();
   app.listen(80);
 });
-app.use("/api", routes.api);
-app.use("/", routes.public);
