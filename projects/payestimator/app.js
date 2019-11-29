@@ -15,6 +15,25 @@ function getHistory() {
         })
     })
 }
+function getSchedule() {
+    return new Promise((res,rej) => {
+        fs.readFile(path.resolve(__dirname + "/schedule.json"), (err, data) => {
+            if (err) return rej(err);
+            res(JSON.parse(data.toString()))
+        })
+    })
+}
+function getScheduleForMonth(month, year) {
+    function isBetween(n, min, max) {
+        return n >= min && n <= max;
+    }
+    var default_schedule = [1,2,3,4,5]
+    for (var i = 0; i < schedule.length; i++) {
+        var s = schedule[i]
+        if (isBetween(year, s.start.year, s.end.year) && isBetween(month, s.start.month, s.end.month)) return s.daysIn;
+    }
+    return default_schedule;
+}
 
 async function createEntry(month, year, pay, hours) {
     var obj = {month, year, pay, hours}
@@ -29,7 +48,7 @@ function avg(nums) {
     return total / nums.length;
 }
 
-function analyzeHistory(history) {
+function analyzeHistory() {
     function avgProp(prop) {
         return avg(history.map(h => h[prop]))
     }
@@ -39,8 +58,10 @@ function analyzeHistory(history) {
         var expected = h.hours * PAY;
         return 1 - (h.pay / expected);
     }))
+    var total_pay = avg_pay * history.length,
+        total_taxes = total_pay * avg_tax_rate;
 
-    return {avg_hours, avg_pay, avg_tax_rate,  historical_tax_rate: history.map(h => {
+    return {avg_hours, avg_pay, avg_tax_rate,  total_pay, total_taxes, historical_tax_rate: history.slice(0, 10).map(h => {
         var expected = h.hours * PAY;
         return 1 - (h.pay / expected);
     })}
@@ -51,20 +72,19 @@ function regressionAnalysis(Xs, Ys) {
 
 function printReport() {
     var analysis = analyzeHistory(history);
-    console.table({...analysis, historical_tax_rate: analysis.historical_tax_rate.map(t => t.toString().substring(0,5)).toString()})
+    for (key in analysis) {
+        if (typeof analysis[key] == "number") analysis[key] = analysis[key].toFixedDecimal();
+    }
+    console.table({...analysis, historical_tax_rate: analysis.historical_tax_rate.map(t => t.toStringFixedSize()).join(",")})
 }
-function estimateHours(pay) {
-    var coefficients = regressionAnalysis(history.map(h => h.pay), history.map(h => h.hours));
-    return coefficients.a * pay + coefficients.b;
-}
+
 function estimatePay(hours) {
-    var analysis = analyzeHistory(history);
+    var analysis = analyzeHistory();
     return (1 - analysis.avg_tax_rate) * hours * PAY
 }
 function estimatePayRegression(hours) {
     var coefficients = regressionAnalysis(history.map(h => h.hours), history.map(h => h.pay))
     return coefficients.a * hours + coefficients.b
-// => { a: 61.27218654211061, b: -39.06195591884391 }
 }
 Number.prototype.toStringFixedSize = function() {
     var this_str = this.toString();
@@ -121,7 +141,6 @@ function getEstimate() {
 }
 async function projectYear() {
     async function getAvgDaysMissed() {
-        history = await getHistory(); 
         var days_missed = 0;
         history.forEach(h => {
             var {pay, hours, year, month} = h;
@@ -140,19 +159,21 @@ async function projectYear() {
         var offset = curr_month + i;
         var month = offset % 12;
         var year = offset > 11 ? curr_year + 1 : curr_year;
-        var hours = getHours(month+1, [3,4,5], year) - (avg_days_missed * 7);
+        var schedule = getScheduleForMonth(month + 1,year)
+        var hours = getHours(month+1, schedule, year) - (avg_days_missed * 7);
         table[months[month]] = estimatePayRegression(hours).toFixedDecimal()
     }
     var total=0;
     for (m in table) {
-        console.log(m, table[m])
         total += table[m]
     }
     table["total"] = total
     console.log("Projected Income Based on an average of", avg_days_missed.toFixedDecimal(), "days missed")
     console.table(table);
 }
-function processCommand(input) {
+async function processCommand(input) {
+    history = await getHistory();
+    schedule = await getSchedule();
     var tokens = input.split(" "),
         command = tokens[0];
     switch(command){
@@ -214,7 +235,8 @@ function onInput(data) {
     processCommand(data.toString().trim().replace("\n", ""))
 }
 
-var history;
+var history,
+    schedule;
 async function run() {
     history = await getHistory();
     process.stdin.addListener("data", onInput);
