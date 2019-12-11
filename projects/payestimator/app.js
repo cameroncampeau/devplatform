@@ -30,9 +30,9 @@ function getScheduleForMonth(month, year) {
     var default_schedule = [1,2,3,4,5]
     for (var i = 0; i < schedule.length; i++) {
         var s = schedule[i]
-        if (isBetween(year, s.start.year, s.end.year) && isBetween(month, s.start.month, s.end.month)) return s.daysIn;
+        if (isBetween(year, s.start.year, s.end.year) && isBetween(month, s.start.month, s.end.month)) return {daysIn: s.daysIn, avg_hours_in: s.avg_hours_in || 7};
     }
-    return default_schedule;
+    return {daysIn:default_schedule, avg_hours_in: 7};
 }
 
 async function createEntry(month, year, pay, hours) {
@@ -99,10 +99,11 @@ Number.prototype.toFixedDecimal = function() {
 
 function printHelp() {
     console.log("====== Commands ======")
-    console.log("create [c]: Create a payment entry")
-    console.log("estimate [e]: Get a monthly estimate")
-    console.log("estimate [e] <hours>: Estimate pay based on <hours>")
-    console.log("report [r]: Display historical report")
+    console.log("create     [c]: Create a payment entry")
+    console.log("estimate   [e]: Get a monthly estimate")
+    console.log("estimate   [e] <hours>: Estimate pay based on <hours>")
+    console.log("project    [p]: Project pay for the next year")
+    console.log("report     [r]: Display historical report")
 }
 function getEstimate() {
     function printEstimate() {
@@ -160,14 +161,14 @@ async function projectYear() {
         var month = offset % 12;
         var year = offset > 11 ? curr_year + 1 : curr_year;
         var schedule = getScheduleForMonth(month + 1,year)
-        var hours = getHours(month+1, schedule, year) - (avg_days_missed * 7);
+        var hours = getHours(month+1, schedule.daysIn, year, schedule.avg_hours_in || 7) - (avg_days_missed * (schedule.avg_hours_in || 7));
         table[months[month]] = estimatePayRegression(hours).toFixedDecimal()
     }
     var total=0;
     for (m in table) {
         total += table[m]
     }
-    table["total"] = total
+    table["total"] = total.toFixedDecimal()
     console.log("Projected Income Based on an average of", avg_days_missed.toFixedDecimal(), "days missed")
     console.table(table);
 }

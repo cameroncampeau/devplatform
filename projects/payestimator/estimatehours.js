@@ -49,9 +49,9 @@ function getNumDaysInFast(month, daysIn, year) {
     })
     return num_days_in 
 }
-function getHours(month,daysIn,year=new Date().getFullYear()) {
+function getHours(month,daysIn,year=new Date().getFullYear(), avg_hours_in=7) {
     
-    return getNumDaysInFast(month,daysIn,year) * 7;
+    return getNumDaysInFast(month,daysIn,year) * avg_hours_in;
 }
 
 module.exports = {getHours}
