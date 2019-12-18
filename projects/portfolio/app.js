@@ -3,9 +3,9 @@ var express = require("express"),
     route = express.Router();
 
 
+route.use("/dist", express.static(path.resolve(__dirname + "/public/dist")))
 route.get("/", (req,res) => {
     res.sendFile(path.resolve(__dirname + "/public/index.html"))
 })
-route.use("/dist", express.static(path.resolve(__dirname + "/public/dist")))
 
 module.exports = route;
