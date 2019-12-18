@@ -2,7 +2,7 @@
   <div id="app">
     <navbar></navbar>
     <header></header>
-    
+    <projects v-bind:projects="projects"></projects>
     <footer></footer>
   </div>
 </template>
@@ -11,30 +11,28 @@
 import Navbar from "./components/Navbar.vue";
 import Footer from "./components/Footer.vue";
 import Header from "./components/Header.vue";
-var projects = [
-  {
-    title: "First Project",
-    description: "This is my first project",
-    url: "/project/the-first-project",
-    tags: ["node", "vuejs", "mongodb", "reactjs", "js", "expressjs"]
-  },
-  {
-    title: "Second Project",
-    description: "This is the second project.",
-    url: "/project/the-second-project",
-    tags: ["php", "nodejs", "reactjs", "expressjs", "js"]
-  }
-];
+import Projects from "./components/Projects.vue";
 
 export default {
   name: "app",
   components: {
     Navbar,
     Footer,
-    Header
+    Header,
+    Projects
   },
   data: function() {
-    return { projects };
+    return { projects: [] };
+  },
+  mounted: function() {
+    fetch("/projects").then(function(t) {
+      return t.text();
+    }).then(function(text) {
+      var projects = JSON.parse(text).projects;
+      this.data.projects = projects;
+    }.bind(this)).catch(function(e) {
+
+    })
   }
 };
 </script>
