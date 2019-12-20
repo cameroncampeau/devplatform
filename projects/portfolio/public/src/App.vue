@@ -2,7 +2,10 @@
   <div id="app">
     <navbar></navbar>
     <header></header>
-    <projects v-bind:projects="projects"></projects>
+    <div class="container">
+      <project-explorer v-bind:projects="projects"></project-explorer>
+    <contact-form></contact-form>
+    </div>
     <footer></footer>
   </div>
 </template>
@@ -11,7 +14,8 @@
 import Navbar from "./components/Navbar.vue";
 import Footer from "./components/Footer.vue";
 import Header from "./components/Header.vue";
-import Projects from "./components/Projects.vue";
+import ProjectExplorer from "./components/Projects.vue";
+import ContactForm from "./components/ContactForm.vue";
 
 export default {
   name: "app",
@@ -19,7 +23,8 @@ export default {
     Navbar,
     Footer,
     Header,
-    Projects
+    ProjectExplorer,
+    ContactForm
   },
   data: function() {
     return { projects: [] };
@@ -28,8 +33,8 @@ export default {
     fetch("/projects").then(function(t) {
       return t.text();
     }).then(function(text) {
-      var projects = JSON.parse(text).projects;
-      this.data.projects = projects;
+      var projects = JSON.parse(text);
+      this.projects = projects;
     }.bind(this)).catch(function(e) {
 
     })

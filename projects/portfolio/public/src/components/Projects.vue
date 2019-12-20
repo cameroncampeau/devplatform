@@ -2,7 +2,7 @@
   <div id="projects">
     <div id="filter"></div>
     <div id="project-list">
-      <div class="project m-3 p-3 shadow-sm" v-for="project in projectList">
+      <div class="project m-3 p-3 shadow-sm" v-for="project in projects">
         <h4>{{project.title}}</h4>
         <p>{{project.description}}</p>
         <div class="tags">
@@ -26,8 +26,15 @@ export default {
     };
   },
   mounted: function() {
+    console.log(this.projects)
   },
   props: {
+    projects: {
+      type: Array,
+      default: function() {
+        return []
+      }
+    }
   }
 };
 </script>
