@@ -41,7 +41,6 @@ export default {
           this.$set(this.processes[i], "data", processHistory[i+1] )
         }
       })
-      console.log(this.processes)
     },
     setData: function() {
       this.processor.setData(this.$el.querySelector("#input").value.split(","))

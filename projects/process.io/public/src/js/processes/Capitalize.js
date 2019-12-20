@@ -7,5 +7,5 @@ module.exports = exports = function(opts) {
     if (typeof str != "string") return str;
     return opts.firstOnly ? firstOnly() : str.toUpperCase();
   }
-  return { run, inType: "string", outType: "string" };
+  return { run, opts, inType: "string", outType: "string" };
 };

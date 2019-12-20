@@ -140,7 +140,7 @@ function getEstimate() {
     })
     console.log("Which days were you in (0-indexed, 0=Sun)");
 }
-async function projectYear() {
+async function projectYear(num_months=12) {
     async function getAvgDaysMissed() {
         var days_missed = 0;
         history.forEach(h => {
@@ -156,7 +156,7 @@ async function projectYear() {
     var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     var table = {}
     var avg_days_missed = await getAvgDaysMissed();
-    for (var i = 0; i < 12; i++) {
+    for (var i = 0; i < num_months; i++) {
         var offset = curr_month + i;
         var month = offset % 12;
         var year = offset > 11 ? curr_year + 1 : curr_year;
@@ -224,7 +224,8 @@ async function processCommand(input) {
             break;
         case "p":
         case "project":
-            projectYear();
+            if (tokens[1]) projectYear(parseInt(tokens[1]))
+			else projectYear();
             return;
         default: 
             printHelp();

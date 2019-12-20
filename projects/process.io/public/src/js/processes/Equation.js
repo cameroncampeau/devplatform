@@ -3,5 +3,5 @@ module.exports = exports = function(opts) {
   function run(num) {
     return math.eval(opts.equation || "$num", { $num: num });
   }
-  return { run, inType: "number",outType: "number" };
+  return { run, opts, inType: "number",outType: "number" };
 };
