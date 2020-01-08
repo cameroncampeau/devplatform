@@ -48,7 +48,7 @@
 <script>
     function getCategories() {
         console.log(Object.keys(movies))
-        var ret = Object.keys(movies).sort((a,b) => a -b);
+        var ret = Object.keys(movies).sort((a,b) => a.charCodeAt(0) -b.charCodeAt(0));
         
         return ret;
         var minCategory = "A".charCodeAt(0),
