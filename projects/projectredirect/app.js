@@ -24,5 +24,9 @@ router.get("/redirect/:username/:password/:id", async (req,res) => {
     var record = await db.getCollection(COLLECTION_NAME).find({name: id});
     res.json(record);
 });
+router.get("/mediashare", async (req,res) => {
+    var record = await db.getCollection(COLLECTION_NAME).find({name: "mediashare"});
+    res.redirect("http://" + record.ip + ":" + record.port);
+})
 
 module.exports = router;
