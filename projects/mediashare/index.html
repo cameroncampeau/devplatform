@@ -1,0 +1,132 @@
+<html>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.js"
+      integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+      crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
+    <style>
+    .movie {
+        position: relative;
+        word-break: break-word;   
+        min-height:125px;
+        max-width: 300px;
+
+    }
+    .movie h5 {
+        margin:10px;
+        width:calc(100% - 20px);
+    }
+    .movie .actions {
+        position: absolute;
+        bottom:0;
+        width:100%;
+        left:0px;
+        padding-left:20px;
+    }
+    .hidden {
+        display: none !important;
+    }
+    .bg-dark-o {
+        background-color:rgba(0,0,0,0.8)
+    }
+    </style>
+<body class="bg-dark">
+    <div id="nav" class="bg-danger py-2">
+        <div id="categories">
+
+        </div>
+    </div>
+    <div id="movies" class="row mx-4">
+
+    </div>
+
+</body>
+<script>
+    function getCategories() {
+        console.log(Object.keys(movies))
+        var ret = Object.keys(movies).sort((a,b) => a -b);
+        
+        return ret;
+        var minCategory = "A".charCodeAt(0),
+            maxCategory = "Z".charCodeAt(0);
+        return new Array(maxCategory - minCategory).fill(0).map((e,i) => String.fromCharCode(minCategory + i))
+    }
+    function createCategoryElements(categories) {
+        var $categories = document.querySelector("#categories")
+        $categories.innerHTML = ""
+        categories.forEach(c => {
+            $categories.innerHTML += `<a href="#" class="d-inline-block px-1 text-white">${c}</a>`
+        })
+    }
+    function createCategories() {
+        createCategoryElements((categories = getCategories()))
+    }
+    function createMovieElement(movieObject) {
+        function isStreamingAvailable(fileName) {
+            var supported_formats = ["ogg", "mp4", "webm"]
+            var ext = fileName.split(".").pop();
+            return !!supported_formats.find(f => f == ext)
+        }
+        var streamingAvailable = isStreamingAvailable(movieObject.fileName)
+        console.log(streamingAvailable)
+        document.querySelector("#movies").innerHTML += `
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3 p-3">
+                <div class="h-100 shadow movie bg-light mx-auto">
+                    <h5 class="px-2 py-1 position-absolute text-white bg-dark-o">${movieObject.name}</h5>
+                    <img class="img-fluid" src="/movie/${movieObject.fileName}/thumbnail/0">
+                    <div class="actions py-2 mt-3 bg-secondary">
+                        <a href="/movie/${movieObject.fileName}" class="btn btn-info" download>
+                            <i class="fa fa-download"></i>
+                        </a>
+                        <a href="/movie/watch/${movieObject.fileName}" class="btn btn-danger ${!streamingAvailable && "hidden" || "" }">
+                            <i class="fa fa-play"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>`;
+
+    }
+    function getMovies() {
+        return fetch("/movie").then(t => t.text()).then(t => JSON.parse(t))
+    }
+    function refreshMovies() {
+        movies = {};
+        getMovies().then(allMovies => {
+            allMovies.movies.forEach(m => {
+                var category = parseInt(m.name[0]) ? "A" : m.name[0].toUpperCase();
+                if (!movies[category]) movies[category] = []
+                movies[category].push(m);
+            })
+            drawMovies();
+        })
+    }
+    function drawMovies() {
+        document.querySelector("#movies").innerHTML = "";
+        movies[category || getCategories()[0]].forEach(m => {
+            createMovieElement(m);
+        })
+        createCategories()
+    }
+    function registerEventListeners() {
+        document.querySelector("#categories").addEventListener("click", function(e) {
+            e.preventDefault();
+            category = e.target.innerHTML;
+            drawMovies()
+        })
+        document.querySelector("#movies").addEventListener("click", function(e) {
+            if (e.target.tagName == "IMG") {
+                var img = (parseInt(e.target.src[e.target.src.length-1]) + 1) % 4
+                e.target.src = e.target.src.substring(0, e.target.src.length-1) + img
+            }
+        })
+    }
+    var movies = {};
+    refreshMovies();
+    registerEventListeners()
+    var category = null;
+</script>
+</html>
