@@ -21,11 +21,12 @@ router.get("/redirect/:username/:password/:id", async (req,res) => {
     var {username, password, id} = req.params;
     if (!username || !password || !id) return res.end();
     if (username != USERNAME || password != PASSWORD) return res.end();
-    var record = await db.getCollection(COLLECTION_NAME).find({name: id});
+    var record = await db.getCollection(COLLECTION_NAME).findOne({name: id});
     res.json(record);
 });
 router.get("/mediashare", async (req,res) => {
-    var record = await db.getCollection(COLLECTION_NAME).find({name: "mediashare"});
+    var record = await db.getCollection(COLLECTION_NAME).findOne({name: "mediashare"});
+    console.log("http://" + record.ip + ":" + record.port)
     res.redirect("http://" + record.ip + ":" + record.port);
 })
 
