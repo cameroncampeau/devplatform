@@ -11,7 +11,7 @@ router.post("/redirect", (req,res) => {
     var {username, password, name} = req.body;
     if (!username || !password || !name) return res.end();
     if (username != USERNAME || password != PASSWORD) return res.end();
-    var ip = req.ip;
+    var ip = req.ip.split(":").pop();
     db.getCollection(COLLECTION_NAME).remove({name});
     db.saveItem(COLLECTION_NAME, {name, ip});
     res.send({name, ip})
