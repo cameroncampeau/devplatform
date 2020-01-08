@@ -21,7 +21,7 @@ router.get("/redirect/:username/:password/:id", async (req,res) => {
     var {username, password, id} = req.params;
     if (!username || !password || !id) return res.end();
     if (username != USERNAME || password != PASSWORD) return res.end();
-    var record = await db.getCollection(COLLECTION_NAME).find({name: id}).exec();
+    var record = await db.getCollection(COLLECTION_NAME).find({name: id});
     res.json(record);
 });
 
