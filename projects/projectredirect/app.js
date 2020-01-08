@@ -3,7 +3,7 @@ var express = require("express"),
     db = require("../../DefaultDB"),
     bodyParser = require("body-parser");
 const COLLECTION_NAME = "project_redirects",
-    USERNAME = "IPTRACK_MEDIASHARE_HOME",
+    USERNAME = "MEDIASHAREHOME",
     PASSWORD = "5dca91fd4be53cc19ccc26a417fe5c27";
 db.loadCollection(COLLECTION_NAME)
 router.use(bodyParser.json());
