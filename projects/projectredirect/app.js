@@ -1,0 +1,28 @@
+var express = require("express"),
+    router = express.Router(),
+    db = require("../../DefaultDB"),
+    bodyParser = require("body-parser");
+const COLLECTION_NAME = "project_redirects",
+    USERNAME = "IPTRACK_MEDIASHARE_HOME",
+    PASSWORD = "IPTRACK_asfuion6uifs24ahMEDIASHARE_HOME_u1isf21ISdauid123123hau";
+db.loadCollection(COLLECTION_NAME)
+router.use(bodyParser.json());
+router.post("/redirect", (req,res) => {
+    var {username, password, name} = req.body;
+    if (!username || !password || !name) return res.end();
+    if (username != USERNAME || password != PASSWORD) return res.end();
+    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    db.getCollection(COLLECTION_NAME).remove({name});
+    db.saveItem(COLLECTION_NAME, {name, ip});
+    res.send({name, ip})
+});
+
+router.get("/redirect/:username/:password/:id", async (req,res) => {
+    var {username, password, id} = req.params;
+    if (!username || !password || !id) return res.end();
+    if (username != USERNAME || password != PASSWORD) return res.end();
+    var record = await db.getCollection(COLLECTION_NAME).find({name: id}).exec();
+    res.json(record);
+});
+
+module.exports = router;
