@@ -1,0 +1,25 @@
+[
+	{
+		"start": {
+			"month": 1,
+			"year": 2019
+		},
+		"end": {
+			"month": 12,
+			"year": 2019
+		},
+		"daysIn": [3, 4, 5]
+	},
+	{
+		"start": {
+			"month": 1,
+			"year": 2020
+		},
+		"end": {
+			"month": 8,
+			"year": 2020
+		},
+		"daysIn": [1, 4, 5],
+		"avg_hours_in": 6.83
+	}
+]
