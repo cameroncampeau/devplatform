@@ -8,13 +8,13 @@ const COLLECTION_NAME = "project_redirects",
 db.loadCollection(COLLECTION_NAME)
 router.use(bodyParser.json());
 router.post("/redirect", (req,res) => {
-    var {username, password, name} = req.body;
+    var {username, password, name,port} = req.body;
     if (!username || !password || !name) return res.end();
     if (username != USERNAME || password != PASSWORD) return res.end();
     var ip = req.ip.split(":").pop();
     db.getCollection(COLLECTION_NAME).remove({name});
-    db.saveItem(COLLECTION_NAME, {name, ip});
-    res.send({name, ip})
+    db.saveItem(COLLECTION_NAME, {name, ip,port});
+    res.send({name, ip,port})
 });
 
 router.get("/redirect/:username/:password/:id", async (req,res) => {
