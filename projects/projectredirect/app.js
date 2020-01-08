@@ -4,7 +4,7 @@ var express = require("express"),
     bodyParser = require("body-parser");
 const COLLECTION_NAME = "project_redirects",
     USERNAME = "IPTRACK_MEDIASHARE_HOME",
-    PASSWORD = "IPTRACK_asfuion6uifs24ahMEDIASHARE_HOME_u1isf21ISdauid123123hau";
+    PASSWORD = "5dca91fd4be53cc19ccc26a417fe5c27";
 db.loadCollection(COLLECTION_NAME)
 router.use(bodyParser.json());
 router.post("/redirect", (req,res) => {
