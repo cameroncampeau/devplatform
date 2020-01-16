@@ -13,10 +13,8 @@
 			max-height: 200px;
 			overflow: auto;
 		}
-		.dog h4 {
+		.dog .name {
 			background: rgba(10, 10, 10, 0.8);
-		}
-		.dog img {
 		}
 	</style>
 	<body>
@@ -40,11 +38,14 @@
 				$el.id = dog.Name;
 				$el.innerHTML = `
                     <div class="m-2 p-3 shadow-sm position-relative">
-                        <h4 class="position-absolute">${dog.Name}</h4>
-                        <img class="img-fluid" src="${dog.Photo}" />
+                        <h5 class="position-absolute px-3 py-1 text-white name">${dog.Name}</h5>
+                        <img class="img-fluid mx-auto d-inline-block" src="${dog.Photo}" />
                         <p>
                             ${specs}
                         </p>
+                        <div class="actions">
+                            <button class="btn btn-primary"><i class="fa fa-star text-warning">Favourite</i></button>    
+                        </div>
                     </div>
                 `;
 				return $el;
@@ -72,6 +73,19 @@
 				dogs.forEach(d => {
 					$container.appendChild(getDogEl(d));
 				});
+			}
+			function setupPage() {
+				function setupListeners() {
+					var $dogList = document.querySelector("#dogList");
+					$dogList.addEventListener("click", e => {
+						var $el = e.target;
+						if ($el.className.indexOf("action favourite") > -1) {
+							favouriteDog(
+								$el.parentElement.parentElement.parentElement.id
+							);
+						}
+					});
+				}
 			}
 			async function init() {
 				refreshDogs();
