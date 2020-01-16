@@ -20,11 +20,25 @@
 		.dog .name {
 			background: rgba(10, 10, 10, 0.8);
 		}
+		.badge {
+			position: absolute;
+			right: 5px;
+			top: 5px;
+		}
+		.hidden {
+			display: none;
+		}
 	</style>
 	<body>
 		<div id="dogList" class="row"></div>
 		<script>
-			var filters = {};
+			var filters = {},
+				profile_name =
+					localStorage.getItem("dog-profile-name") ||
+					prompt("Enter Profile Name"),
+				profile = null;
+
+			localStorage.setItem("dog-profile-name", profile_name);
 			async function getDogs() {
 				var res = await fetch("/dogs/api/dog");
 				var dogs = JSON.parse(await res.text());
@@ -35,23 +49,36 @@
 				for (prop in dog) {
 					if (["Name", "Age", "Photo"].indexOf(prop) > -1) continue;
 					if (dog[prop].toString().length === 0) continue;
+
 					specs += `<b>${prop}</b>: ${dog[prop]}<br>`;
 				}
+
+				var is_favourited =
+					profile.favourites.map(f => f.dog).indexOf(dog.ID) > -1;
 				var $el = document.createElement("div");
 				$el.className = "dog col-12 col-sm-6 col-md-4 col-lg-3";
-				$el.id = dog.Name;
+				$el.id = dog.ID;
 				$el.innerHTML = `
-                    <div class="m-2 p-3 shadow-sm position-relative">
-                        <h5 class="position-absolute px-3 py-1 text-white name">${dog.Name}</h5>
-                        <img class="img-fluid mx-auto d-inline-block" src="${dog.Photo}" />
-                        <p>
-                            ${specs}
-                        </p>
-                        <div class="actions">
-                            <button class="btn btn-primary"><i class="fa fa-star text-warning"></i>Favourite</button>    
-                        </div>
-                    </div>
-                `;
+			                 <div class="m-2 p-3 shadow-sm position-relative">
+			                              <h5 class="position-absolute px-3 py-1 text-white name">${
+												dog.Name
+											}</h5>
+			                              <span class="badge ${
+												is_favourited ? "" : "hidden"
+											}"><i class="fa fa-star text-warning fa-2x"></i></span>
+			                     <img class="img-fluid mx-auto d-inline-block" src="${
+										dog.Photo
+									}" />
+			                     <p>
+			                         ${specs}
+			                     </p>
+			                     <div class="actions">
+			                         <button class="btn btn-primary action-favourite ${
+											is_favourited ? "hidden" : ""
+										}"><i class="fa fa-star text-warning mr-2"></i>Favourite</button>
+			                     </div>
+			                 </div>
+			             `;
 				return $el;
 			}
 			async function refreshDogs() {
@@ -74,25 +101,44 @@
 				var dogs = await getDogs();
 				dogs = applyFilters(dogs);
 				var $container = document.body.querySelector("#dogList");
+				$container.innerHTML = "";
 				dogs.forEach(d => {
 					$container.appendChild(getDogEl(d));
 				});
+			}
+			async function favouriteDog(id) {
+				await fetch(
+					"/dogs/api/profile/" + profile_name + "/favourite/" + id,
+					{ method: "POST" }
+				);
+				await getProfile();
+				await refreshDogs();
+			}
+			async function getProfile() {
+				var res = await (
+					await fetch("/dogs/api/profile/" + profile_name)
+				).text();
+				profile = JSON.parse(res).profile;
 			}
 			function setupPage() {
 				function setupListeners() {
 					var $dogList = document.querySelector("#dogList");
 					$dogList.addEventListener("click", e => {
 						var $el = e.target;
-						if ($el.className.indexOf("action favourite") > -1) {
+						console.log(e);
+						if ($el.className.indexOf("action-favourite") > -1) {
 							favouriteDog(
 								$el.parentElement.parentElement.parentElement.id
 							);
 						}
 					});
 				}
+				setupListeners();
 			}
 			async function init() {
-				refreshDogs();
+				setupPage();
+				await getProfile();
+				await refreshDogs();
 			}
 			init();
 		</script>

@@ -5,6 +5,10 @@ var rp = require("request-promise"),
 const ENDPOINT =
 	"https://www.torontohumanesociety.com/api/api.php?action=getAnimalsForSpeciesId&id=1&stageId=2";
 
+function Profile() {
+	return { favourites: [] };
+}
+
 async function get(force_refresh = false) {
 	async function fetchDogs() {
 		return await rp({
@@ -37,16 +41,32 @@ async function saveDogDB(dogs) {
 }
 
 async function getPreferences() {
-	var preferences = await fs.readFile("user.preferences.json");
+	var preferences = await fs.readFile(
+		path.resolve(__dirname + "/../db/user.preferences.json")
+	);
 	preferences = JSON.parse(preferences);
 	return preferences;
 }
 
 async function setPreferences(preferences) {
 	return await fs.writeFile(
-		"user.preferences.json",
+		path.resolve(__dirname + "/../db/user.preferences.json"),
 		JSON.stringify(preferences)
 	);
 }
 
-module.exports = { get, saveDogDB, getPreferences, setPreferences };
+async function favouriteDog(profile_name, dog) {
+	var record = { dog, date: Date.now() };
+	var preferences = await getPreferences();
+	if (!preferences.profiles[profile_name])
+		preferences.profiles[profile_name] = Profile();
+
+	preferences.profiles[profile_name].favourites.push(record);
+	await setPreferences(preferences);
+}
+async function getProfile(name) {
+	var preferences = await getPreferences();
+	return preferences.profiles[name] || Profile();
+}
+
+module.exports = { get, saveDogDB, favouriteDog, getProfile };
