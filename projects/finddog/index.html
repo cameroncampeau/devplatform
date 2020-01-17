@@ -30,15 +30,17 @@
 		}
 	</style>
 	<body>
+		<button class="float-right btn-danger" id="logout">Logout</button>
+		<div id="filter"></div>
 		<div id="dogList" class="row"></div>
 		<script>
 			var filters = {},
 				profile_name =
 					localStorage.getItem("dog-profile-name") ||
 					prompt("Enter Profile Name"),
-				profile = null;
+				profile = null,
+				last_dogs = [];
 
-			localStorage.setItem("dog-profile-name", profile_name);
 			async function getDogs() {
 				var res = await fetch("/dogs/api/dog");
 				var dogs = JSON.parse(await res.text());
@@ -100,11 +102,14 @@
 				}
 				var dogs = await getDogs();
 				dogs = applyFilters(dogs);
+				if (JSON.stringify(dogs) == JSON.stringify(last_dogs)) return;
 				var $container = document.body.querySelector("#dogList");
 				$container.innerHTML = "";
 				dogs.forEach(d => {
 					$container.appendChild(getDogEl(d));
 				});
+
+				fillFilters(dogs);
 			}
 			async function favouriteDog(id) {
 				await fetch(
@@ -120,6 +125,50 @@
 				).text();
 				profile = JSON.parse(res).profile;
 			}
+			function logout() {
+				localStorage.removeItem("dog-profile-name");
+				window.location.reload();
+			}
+			function fillFilters(dogs) {
+				function getFilterEl(name, opts) {
+					var $el = document.createElement("div");
+					$el.id = name;
+					var $title = document.createElement("h5");
+					$title.innerText = name;
+					$title.className = "d-inline-block";
+					var $inputDiv = document.createElement("div");
+					$inputDiv.className = "d-inline-block ";
+					opts.forEach(option => {
+						var $input = document.createElement("input"),
+							$inputLabel = document.createElement("label"),
+							$container = document.createElement("div");
+						$container.className = "form-check form-check-inline";
+						$inputLabel.innerText = option;
+						$input.type = "checkbox";
+						$input.className = "form-check-input";
+						$container.appendChild($input);
+						$container.appendChild($inputLabel);
+						$inputDiv.appendChild($container);
+					});
+					$el.appendChild($title);
+					$el.appendChild($inputDiv);
+					return $el;
+				}
+				const ignored_props = ["ID", "Name", "Photo"];
+				var props = {};
+				dogs.forEach(d => {
+					for (prop in d) {
+						if (ignored_props.indexOf(prop) > -1) continue;
+						if (!props[prop]) props[prop] = new Set();
+						props[prop].add(d[prop]);
+					}
+				});
+				var $container = document.querySelector("#filter");
+				$container.innerHTML = "";
+				for (prop in props) {
+					$container.appendChild(getFilterEl(prop, props[prop]));
+				}
+			}
 			function setupPage() {
 				function setupListeners() {
 					var $dogList = document.querySelector("#dogList");
@@ -132,6 +181,9 @@
 							);
 						}
 					});
+					document
+						.querySelector("#logout")
+						.addEventListener("click", logout);
 				}
 				setupListeners();
 			}
@@ -139,6 +191,7 @@
 				setupPage();
 				await getProfile();
 				await refreshDogs();
+				localStorage.setItem("dog-profile-name", profile_name);
 			}
 			init();
 		</script>
