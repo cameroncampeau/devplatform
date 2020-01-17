@@ -155,6 +155,7 @@
 				setupPage();
 				await getProfile();
 				await refreshDogs();
+				setTimeout(refreshDogs, 5000);
 			}
 			window.onload = init;
 		</script>
