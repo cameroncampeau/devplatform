@@ -139,4 +139,4 @@ async function getProfile(name) {
 	return preferences.profiles[name] || Profile();
 }
 
-module.exports = { get, saveDogDB, favouriteDog, getProfile };
+module.exports = { get, saveDogDB, favouriteDog, unfavouriteDog, getProfile };

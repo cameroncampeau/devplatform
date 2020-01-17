@@ -1,5 +1,8 @@
 <html>
 	<head>
+		
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 		<link
 			rel="stylesheet"
 			href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -29,9 +32,13 @@
 			display: none;
 		}
 	</style>
+<<<<<<< HEAD
 	<body>
 		<button class="float-right btn-danger" id="logout">Logout</button>
 		<div id="filter"></div>
+=======
+	<body class="bg-light">
+>>>>>>> 610350702f5ad2e1549adf38a0c62454c191b823
 		<div id="dogList" class="row"></div>
 		<script>
 			var filters = {},
@@ -61,14 +68,14 @@
 				$el.className = "dog col-12 col-sm-6 col-md-4 col-lg-3";
 				$el.id = dog.ID;
 				$el.innerHTML = `
-			                 <div class="m-2 p-3 shadow-sm position-relative">
+			                 <div class="m-2 p-3 shadow-sm position-relative bg-white">
 			                              <h5 class="position-absolute px-3 py-1 text-white name">${
 												dog.Name
 											}</h5>
 			                              <span class="badge ${
 												is_favourited ? "" : "hidden"
-											}"><i class="fa fa-star text-warning fa-2x"></i></span>
-			                     <img class="img-fluid mx-auto d-inline-block" src="${
+											}"><i class="fa fa-star text-warning fa-2x favourite-icon"></i></span>
+			                     <img class="img-fluid mx-auto d-inline-block mb-3" src="${
 										dog.Photo
 									}" />
 			                     <p>
@@ -118,6 +125,15 @@
 				);
 				await getProfile();
 				await refreshDogs();
+			}
+			async function unfavouriteDog(id) {
+				await fetch(
+					"/dogs/api/profile/" + profile_name + "/favourite/" + id,
+					{ method: "DELETE" }
+				);
+				await getProfile();
+				await refreshDogs();
+
 			}
 			async function getProfile() {
 				var res = await (
@@ -179,6 +195,10 @@
 							favouriteDog(
 								$el.parentElement.parentElement.parentElement.id
 							);
+						} else if ($el.className.indexOf("favourite-icon") > -1) {
+							console.log("A")
+							unfavouriteDog(
+								$el.parentElement.parentElement.parentElement.id)
 						}
 					});
 					document
@@ -191,9 +211,14 @@
 				setupPage();
 				await getProfile();
 				await refreshDogs();
+<<<<<<< HEAD
 				localStorage.setItem("dog-profile-name", profile_name);
+=======
+				setInterval(refreshDogs, 5000);
+				setInterval(getProfile, 5000);
+>>>>>>> 610350702f5ad2e1549adf38a0c62454c191b823
 			}
-			init();
+			window.onload = init;
 		</script>
 	</body>
 </html>
