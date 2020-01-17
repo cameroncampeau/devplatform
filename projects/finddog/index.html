@@ -29,7 +29,7 @@
 			display: none;
 		}
 	</style>
-	<body>
+	<body class="bg-light">
 		<div id="dogList" class="row"></div>
 		<script>
 			var filters = {},
@@ -59,14 +59,14 @@
 				$el.className = "dog col-12 col-sm-6 col-md-4 col-lg-3";
 				$el.id = dog.ID;
 				$el.innerHTML = `
-			                 <div class="m-2 p-3 shadow-sm position-relative">
+			                 <div class="m-2 p-3 shadow-sm position-relative bg-white">
 			                              <h5 class="position-absolute px-3 py-1 text-white name">${
 												dog.Name
 											}</h5>
 			                              <span class="badge ${
 												is_favourited ? "" : "hidden"
-											}"><i class="fa fa-star text-warning fa-2x"></i></span>
-			                     <img class="img-fluid mx-auto d-inline-block" src="${
+											}"><i class="fa fa-star text-warning fa-2x favourite-icon"></i></span>
+			                     <img class="img-fluid mx-auto d-inline-block mb-3" src="${
 										dog.Photo
 									}" />
 			                     <p>
@@ -114,6 +114,15 @@
 				await getProfile();
 				await refreshDogs();
 			}
+			async function unfavouriteDog(id) {
+				await fetch(
+					"/dogs/api/profile/" + profile_name + "/favourite/" + id,
+					{ method: "DELETE" }
+				);
+				await getProfile();
+				await refreshDogs();
+
+			}
 			async function getProfile() {
 				var res = await (
 					await fetch("/dogs/api/profile/" + profile_name)
@@ -130,6 +139,10 @@
 							favouriteDog(
 								$el.parentElement.parentElement.parentElement.id
 							);
+						} else if ($el.className.indexOf("favourite-icon") > -1) {
+							console.log("A")
+							unfavouriteDog(
+								$el.parentElement.parentElement.parentElement.id)
 						}
 					});
 				}

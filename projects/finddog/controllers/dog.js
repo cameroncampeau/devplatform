@@ -64,9 +64,21 @@ async function favouriteDog(profile_name, dog) {
 	preferences.profiles[profile_name].favourites.push(record);
 	await setPreferences(preferences);
 }
+
+async function unfavouriteDog(profile_name, dog) {
+	var preferences = await getPreferences();
+
+	var profile = preferences.profiles[profile_name]; 
+
+	if (!profile) return;
+	profile.favourites = profile.favourites.filter(favourite => favourite.dog != dog);
+	
+	await setPreferences(preferences)
+}
+
 async function getProfile(name) {
 	var preferences = await getPreferences();
 	return preferences.profiles[name] || Profile();
 }
 
-module.exports = { get, saveDogDB, favouriteDog, getProfile };
+module.exports = { get, saveDogDB, favouriteDog, unfavouriteDog, getProfile };

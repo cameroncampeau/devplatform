@@ -28,4 +28,14 @@ router.post("/api/profile/:name/favourite/:dog_id", async (req, res) => {
 		res.status(500).end("Server Error");
 	}
 });
+
+router.delete("/api/profile/:name/favourite/:dog_id", async (req, res) => {
+	try {
+		await Dog.unfavouriteDog(req.params.name, req.params.dog_id);
+		res.json({ error: false });
+	} catch (e) {
+		console.error(e);
+		res.status(500).end("Server Error");
+	}
+});
 module.exports = router;
