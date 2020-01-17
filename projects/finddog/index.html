@@ -1,7 +1,6 @@
 <html>
 	<head>
-		
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 		<link
 			rel="stylesheet"
@@ -32,13 +31,9 @@
 			display: none;
 		}
 	</style>
-<<<<<<< HEAD
-	<body>
+	<body class="bg-light">
 		<button class="float-right btn-danger" id="logout">Logout</button>
 		<div id="filter"></div>
-=======
-	<body class="bg-light">
->>>>>>> 610350702f5ad2e1549adf38a0c62454c191b823
 		<div id="dogList" class="row"></div>
 		<script>
 			var filters = {},
@@ -133,7 +128,6 @@
 				);
 				await getProfile();
 				await refreshDogs();
-
 			}
 			async function getProfile() {
 				var res = await (
@@ -195,10 +189,13 @@
 							favouriteDog(
 								$el.parentElement.parentElement.parentElement.id
 							);
-						} else if ($el.className.indexOf("favourite-icon") > -1) {
-							console.log("A")
+						} else if (
+							$el.className.indexOf("favourite-icon") > -1
+						) {
+							console.log("A");
 							unfavouriteDog(
-								$el.parentElement.parentElement.parentElement.id)
+								$el.parentElement.parentElement.parentElement.id
+							);
 						}
 					});
 					document
@@ -211,12 +208,9 @@
 				setupPage();
 				await getProfile();
 				await refreshDogs();
-<<<<<<< HEAD
 				localStorage.setItem("dog-profile-name", profile_name);
-=======
 				setInterval(refreshDogs, 5000);
 				setInterval(getProfile, 5000);
->>>>>>> 610350702f5ad2e1549adf38a0c62454c191b823
 			}
 			window.onload = init;
 		</script>

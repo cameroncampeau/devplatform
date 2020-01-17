@@ -52,6 +52,18 @@ async function favouriteDog(profile_name, dog) {
 	preferences.profiles[profile_name].favourites.push(record);
 	await setPreferences(preferences);
 }
+async function unfavouriteDog(profile_name, dog) {
+	var preferences = await getPreferences();
+
+	var profile = preferences.profiles[profile_name];
+
+	if (!profile) return;
+	profile.favourites = profile.favourites.filter(
+		favourite => favourite.dog != dog
+	);
+
+	await setPreferences(preferences);
+}
 async function saveDogDB(dogs) {
 	await fs.writeFile(
 		path.resolve(__dirname + "/../db/dogs.db.json"),
@@ -74,7 +86,57 @@ async function getBreeds() {
 	return JSON.parse((await fs.readFile(db.breed)).toString());
 }
 
-async function getBreedDetails(breed_name) {
+async function getAllBreedNames(force_fetch = false) {
+	if (!force_fetch) {
+		var breeds = await getBreeds();
+		return Object.keys(breeds);
+	}
+	var $ = await rp({
+		uri: BREED_DETAILS_ENDPOINT("golden-retriever"),
+		transform: cheerio.load
+	});
+	var breed_names = [];
+	$(".search-results-list.js-search-results-list li a").each((i, e) => {
+		breed_names.push($(e).text());
+	});
+	return breed_names;
+}
+function wait(ms) {
+	return new Promise((res, rej) => {
+		setTimeout(res, ms);
+	});
+}
+async function refreshBreedDb() {
+	var breeds = {},
+		breed_names = await getAllBreedNames(true);
+	var promises = [];
+	breed_names.forEach(async (b, i) => {
+		if (i % 20 == 0) await wait(1000);
+		b = b.split(" ").join("-");
+		if (
+			["Korean-Jindo-Dog", "Xoloitzcuintli", "Cirneco-dell’Etna"].indexOf(
+				b
+			) > -1
+		)
+			return;
+		promises.push(
+			getBreedDetails(b, true, false).catch(e => {
+				console.error(b, "ERROR\n");
+				return {};
+			})
+		);
+		return;
+	});
+	var breed_info = await Promise.all(promises);
+
+	breed_info.forEach((b, i) => {
+		breeds[breed_names[i]] = b;
+	});
+
+	await saveBreedDb(breeds);
+}
+
+async function getBreedDetails(breed_name, force_fetch = false, save = true) {
 	async function fetchFromSite() {
 		const DETAIL_SELECTOR = ".js-list-item.child-characteristic",
 			DETAIL_TITLE_SELECTOR = ".characteristic-title",
@@ -106,15 +168,18 @@ async function getBreedDetails(breed_name) {
 		});
 		return details;
 	}
-	var breeds = await getBreeds();
-	if (breed_name in breeds) return breeds[breed_name];
+	if (save || !force_fetch) {
+		var breeds = await getBreeds();
+		if (!force_fetch && breed_name in breeds) return breeds[breed_name];
+	}
 
 	var breed = await fetchFromSite();
-	breeds[breed_name] = breed;
-	await saveBreedDb(breeds);
+	if (save) {
+		breeds[breed_name] = breed;
+		await saveBreedDb(breeds);
+	}
 	return breed;
 }
-getBreedDetails("golden-retriever");
 /*
 	User Preferences/Profiles
 
@@ -139,4 +204,12 @@ async function getProfile(name) {
 	return preferences.profiles[name] || Profile();
 }
 
-module.exports = { get, saveDogDB, favouriteDog, unfavouriteDog, getProfile };
+module.exports = {
+	get,
+	saveDogDB,
+	favouriteDog,
+	unfavouriteDog,
+	getProfile,
+	getAllBreedNames,
+	getBreedDetails
+};
