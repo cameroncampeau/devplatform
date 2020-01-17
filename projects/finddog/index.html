@@ -156,6 +156,7 @@
 				await getProfile();
 				await refreshDogs();
 				setInterval(refreshDogs, 5000);
+				setInterval(getProfile, 5000);
 			}
 			window.onload = init;
 		</script>
