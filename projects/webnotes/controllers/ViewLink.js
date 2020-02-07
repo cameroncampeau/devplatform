@@ -9,6 +9,5 @@ async function create(key, note_id) {
 async function get(key) {
     return await DefaultDb.getCollection(COLLECTION_NAME).findOne({key})
 }
-create("dog", "174714b6701749ddab8bd08afa8ed240")
 
 module.exports = {create, get}
