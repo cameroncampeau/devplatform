@@ -81,6 +81,16 @@ route.get("/note/view/:id", async (req,res) => {
 	}
 })
 
+route.get("/note/view/create/:key/:note_id", middleware.auth, async (req,res) => {
+	try {
+		await controllers.Link.create(req.params.key, req.params.node_id);
+		res.redirect("/webnotes/note/view/" + req.params.key);
+	} catch(e) {
+		console.error(e);
+		res.status(500).end("Server Error")
+	}
+})
+
 route.post("/note", middleware.auth, async (req, res) => {
 	if (!req.session.webnotes || !req.session.webnotes.user)
 		return res.status(401).end("Not Authorized");
