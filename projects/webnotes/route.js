@@ -1,6 +1,8 @@
 const express = require("express");
 const route = express.Router();
+const fs = require("fs").promises;
 const controllers = {
+		Link: require("./controllers/ViewLink"),
 		Note: require("./controllers/Note"),
 		User: require("./controllers/User")
 	},
@@ -64,6 +66,20 @@ route.get("/note/:id", middleware.auth, async (req, res) => {
 		res.status(500).end("Server Error");
 	}
 });
+
+route.get("/note/view/:id", async (req,res) => {
+	try {
+		var link = await controllers.Link.get(req.params.id);
+		if (!link) return res.status(404).end("Not Found")
+		var note_body = (await controllers.Note.get(link.note)).body;
+		var html_header = (await fs.readFile(__dirname + "/view_head.html")).toString();
+		var html_footer = (await fs.readFile(__dirname + "/view_foot.html")).toString();
+		res.send(html_header + note_body + html_footer)
+	} catch(e) {
+		console.error(e);
+		res.status(500).end("Server Error")
+	}
+})
 
 route.post("/note", middleware.auth, async (req, res) => {
 	if (!req.session.webnotes || !req.session.webnotes.user)
