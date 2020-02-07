@@ -14,6 +14,10 @@ function saveItem(collection, item) {
   db[collection].save(item);
 }
 
+function removeItem(collection, query) {
+	db[collection].remove(query);
+}
+
 function getCollection(collectionName) {
   return db[collectionName];
 }

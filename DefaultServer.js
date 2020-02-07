@@ -1,7 +1,8 @@
 var express = require("express"),
 	app = express(),
 	https = require("https"),
-	fs = require("fs").promises;
+	fs = require("fs").promises,
+	session = require("express-session");
 
 function addRoute(path, router) {
 	app.use(path, router);
@@ -21,6 +22,12 @@ async function start(port) {
 		)
 		.listen(port);
 	console.log("Starting default server on port", port);
-}
+	app.use(session({
+			  secret: Math.random().toString(32),
+			  resave: false,
+			  saveUninitialized: true,
+			  cookie: { secure: true }
+		}))
+}	
 
 module.exports = { addRoute, start };

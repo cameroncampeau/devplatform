@@ -1,0 +1,221 @@
+<html>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<link
+		rel="stylesheet"
+		href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+	/>
+	<link
+		href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+		rel="stylesheet"
+		integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+		crossorigin="anonymous"
+	/>
+	<style>
+		.hidden {
+			display: none !important;
+			opacity: 0 !important;
+			height: 0px !important;
+		}
+		#error,
+		#message {
+			position: fixed;
+			top: 5px !important;
+		}
+		#editor textarea {
+			height: calc(100vh - 3em);
+		}
+		@media print {
+			body > *:not(#preview) {
+				height: 0 !important;
+				display: none !important;
+			}
+		}
+	</style>
+	<body>
+		<div
+			id="auth"
+			class=" w-100 h-100 d-flex justify-content-center align-items-center position-fixed bg-dark"
+			style="z-index: 9999999;"
+		>
+			<div class="p-4 bg-light">
+				<form id="login">
+					<input type="text" id="username" /><br />
+					<input type="password" id="password" />
+					<button class="btn btn-primary float-right">Login</button>
+				</form>
+			</div>
+		</div>
+		<div id="note" class="hidden row overflow-hidden w-100 h-100">
+			<div id="editor" class="col-12 col-lg-6 border-right h-100">
+				<div class="details">
+					<h3 id="noteName" class="d-inline-block"></h3>
+					<i id="saveNote" class="fa fa-2x float-right fa-save"></i>
+				</div>
+				<textarea
+					class="w-100"
+					name=""
+					id=""
+					cols="30"
+					rows="10"
+				></textarea>
+			</div>
+			<div
+				id="preview"
+				class="col-12 col-lg-6 py-3 h-100 overflow-auto"
+			></div>
+		</div>
+		<div id="noteList">
+			<div class="create">
+				<input id="noteTitle" type="text" placeholder="Title" />
+				<button id="createNote">Create</button>
+			</div>
+			<div class="list list-group"></div>
+		</div>
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.8.0/marked.min.js"
+			integrity="sha256-fIsvyYkI1qQV1tu1PdlM4FF43kW76YCnCcl/xJCD3Fc="
+			crossorigin="anonymous"
+		></script>
+		<script>
+			var last_saved_note_body = null;
+			var autosave = false;
+			function showMessage(message) {
+				var messageEl = document.createElement("div");
+				messageEl.className = "w-100 text-center";
+				messageEl.id = "message";
+				messageEl.innerHTML += `
+				<div class="alert alert-primary mx-2 d-inline-block">
+						${message}
+					</div>
+				`;
+				document.body.appendChild(messageEl);
+				setTimeout(function() {
+					document.body.removeChild(messageEl);
+				}, 6000);
+			}
+			function showError(message) {
+				document.body.innerHTML += `
+					<div id="error" class="fixed mx-3 my-2 text-center bg-danger text-white py-2 " style="top:0">
+						${message}
+						</div>
+				`;
+				setTimeout(function() {
+					document.body.removeChild(getEl("#error"));
+				}, 6000);
+			}
+			function getEl(selector) {
+				return document.body.querySelector(selector);
+			}
+			async function createNote(title) {
+				fetch("/webnotes/note", {
+					method: "POST",
+					body: JSON.stringify({ title }),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(r => r.json())
+					.then(res => {
+						selectNote(res.note._id);
+					});
+			}
+			async function updateNoteBody(body) {
+				var note_id = getEl("#note").dataset.note;
+				fetch("/webnotes/note/" + note_id, {
+					method: "PATCH",
+					body: JSON.stringify({ body }),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(res => res.json())
+					.then(r => {
+						last_saved_note_body = body;
+						showMessage("Note saved");
+					})
+					.catch(e => {
+						showError(e.message);
+					});
+			}
+			async function selectNote(id) {
+				fetch("/webnotes/note/" + id)
+					.then(r => r.json())
+					.then(res => {
+						getEl("#noteList").className += " hidden";
+						var $note = getEl("#note");
+						$note.dataset.note = id;
+						$note.className = $note.className.replace("hidden", "");
+						getEl("#editor textarea").value = res.note.body;
+						getEl("#preview").innerHTML = marked(res.note.body);
+					});
+			}
+			async function refreshNotes() {
+				fetch("/webnotes/note")
+					.then(r => r.json())
+					.then(res => {
+						var $container = getEl("#noteList div.list");
+						$container.innerHTML = "";
+						res.notes.forEach(n => {
+							$container.innerHTML += `
+							<a id="${n._id}" class="note list-group-item" href="#">${n.title}</a>
+						`;
+						});
+					});
+			}
+			async function login(username, password) {
+				await fetch("/webnotes/login", {
+					method: "POST",
+					body: JSON.stringify({ username, password }),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(t => t.json())
+					.then(user => {
+						document.body.querySelector("#auth").className +=
+							" hidden";
+						refreshNotes();
+					});
+			}
+			function registerHooks() {
+				var num_changes_since_save = 0;
+				getEl("#editor textarea").addEventListener("keyup", e => {
+					setTimeout(function() {
+						var body = e.target.value;
+						if (last_saved_note_body == body) return;
+						num_changes_since_save += 1;
+						if (num_changes_since_save > 5 && autosave)
+							updateNoteBody();
+						getEl("#preview").innerHTML = marked(body);
+					}, 100);
+				});
+				getEl("#saveNote").addEventListener("click", e => {
+					e.preventDefault();
+					updateNoteBody(getEl("#editor textarea").value);
+				});
+				getEl("#noteList").addEventListener("click", e => {
+					if (e.target.className.indexOf("note") == -1) return;
+					selectNote(e.target.id);
+				});
+
+				getEl("#auth form").addEventListener("submit", e => {
+					e.preventDefault();
+					var username = getEl("#username").value;
+					var password = getEl("#password").value;
+
+					login(username, password);
+				});
+				getEl("#createNote").addEventListener("click", e => {
+					e.preventDefault();
+					createNote(getEl("#noteTitle").value);
+				});
+			}
+			function init() {
+				registerHooks();
+				login();
+			}
+			window.onload = init;
+		</script>
+	</body>
+</html>
