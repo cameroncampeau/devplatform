@@ -57,9 +57,14 @@
 				<div class="details">
 					<h3 id="noteName" class="d-inline-block"></h3>
 					<div class="float-right">
-						<input type="text" id="linkName">
-						<button id="createLink" class="btn-primary"><i class="fa fa-link"></i></button>
-						<i id="saveNote" class="fa fa-2x fa-save"></i>
+						<div class="d-inline-block"  id="linkList">
+
+						</div>
+						<div class="d-inline-block" id="link">
+							<input type="text" id="linkName">
+							<button id="createLink" class="btn-primary"><i class="fa fa-link"></i></button>
+							<i id="saveNote" class="fa fa-2x fa-save"></i>
+						</div>
 					</div>
 				</div>
 				<textarea
@@ -159,6 +164,15 @@
 						getEl("#editor textarea").value = res.note.body;
 						getEl("#editor #noteName").innerText = res.note.title;
 						getEl("#preview").innerHTML = marked(res.note.body);
+						if (res.note.links && res.note.links.length > 0) {
+							var $container = getEl("#linkList");
+							$container.innerHTML = "";
+							for (link of res.note.links) {
+								$container.innerHTML += `
+									<a class="mx-2" href="/webnotes/note/view/${link.key}">${link.key}</a>
+								`
+							}
+						}
 					});
 			}
 			async function refreshNotes() {
