@@ -25,6 +25,12 @@
 		#editor textarea {
 			height: calc(100vh - 3em);
 		}
+		@media screen and (max-width: 992px) {
+			#editor textarea {
+				height: calc(50vh - 3em);
+			}
+
+		}
 		@media print {
 			body > *:not(#preview) {
 				height: 0 !important;
@@ -46,11 +52,15 @@
 				</form>
 			</div>
 		</div>
-		<div id="note" class="hidden row overflow-hidden w-100 h-100">
-			<div id="editor" class="col-12 col-lg-6 border-right h-100">
+		<div id="note" class="hidden row overflow-hidden w-100">
+			<div id="editor" class="col-12 col-lg-6 border-right h-50 h-lg-100">
 				<div class="details">
 					<h3 id="noteName" class="d-inline-block"></h3>
-					<i id="saveNote" class="fa fa-2x float-right fa-save"></i>
+					<div class="float-right">
+						<input type="text" id="linkName">
+						<button id="createLink" class="btn-primary"><i class="fa fa-link"></i></button>
+						<i id="saveNote" class="fa fa-2x fa-save"></i>
+					</div>
 				</div>
 				<textarea
 					class="w-100"
@@ -62,7 +72,7 @@
 			</div>
 			<div
 				id="preview"
-				class="col-12 col-lg-6 py-3 h-100 overflow-auto"
+				class="col-12 col-lg-6 py-3  h-50 h-lg-100 overflow-auto"
 			></div>
 		</div>
 		<div id="noteList">
@@ -147,6 +157,7 @@
 						$note.dataset.note = id;
 						$note.className = $note.className.replace("hidden", "");
 						getEl("#editor textarea").value = res.note.body;
+						getEl("#editor #noteName").innerText = res.note.title;
 						getEl("#preview").innerHTML = marked(res.note.body);
 					});
 			}
@@ -190,6 +201,12 @@
 						getEl("#preview").innerHTML = marked(body);
 					}, 100);
 				});
+				getEl("#editor button#createLink").addEventListener("click", e => {
+					e.preventDefault();
+					var link_name = getEl("input#linkName").value,
+						link_id = getEl("#note").dataset.note;
+					window.location = `/webnotes/note/view/create/${link_name}/${link_id}`
+				})
 				getEl("#saveNote").addEventListener("click", e => {
 					e.preventDefault();
 					updateNoteBody(getEl("#editor textarea").value);

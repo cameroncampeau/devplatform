@@ -1,6 +1,5 @@
 const express = require("express");
 const route = express.Router();
-const fs = require("fs").promises;
 const controllers = {
 		Link: require("./controllers/ViewLink"),
 		Note: require("./controllers/Note"),
@@ -67,14 +66,14 @@ route.get("/note/:id", middleware.auth, async (req, res) => {
 	}
 });
 
+const buildViewTemplate = require("./template").build;
 route.get("/note/view/:id", async (req,res) => {
 	try {
 		var link = await controllers.Link.get(req.params.id);
 		if (!link) return res.status(404).end("Not Found")
-		var note_body = (await controllers.Note.get(link.note)).body;
-		var html_header = (await fs.readFile(__dirname + "/view_head.html")).toString();
-		var html_footer = (await fs.readFile(__dirname + "/view_foot.html")).toString();
-		res.send(html_header + note_body + html_footer)
+		var note = await controllers.Note.get(link.note);
+		if (!note) return res.status(404).end("Note not Found")
+		res.send(buildViewTemplate(note.body))
 	} catch(e) {
 		console.error(e);
 		res.status(500).end("Server Error")
