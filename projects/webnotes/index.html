@@ -61,7 +61,7 @@
 		<div id="note" class="hidden row overflow-hidden w-100 h-100">
 			<div id="editor" class="col-12 col-lg-6 border-right">
 				<div class="details">
-					<h3 id="noteName" class="d-inline-block"></h3>
+					<h3 id="noteName" class="d-inline-block"></h3><span id="numChanges"></span>
 					<div class="float-right">
 						<div class="d-inline-block"  id="linkList">
 
@@ -154,6 +154,7 @@
 					.then(r => {
 						last_saved_note_body = body;
 						showMessage("Note saved");
+						num_changes_since_save = 0;
 					})
 					.catch(e => {
 						showError(e.message);
@@ -168,6 +169,7 @@
 						$note.dataset.note = id;
 						$note.className = $note.className.replace("hidden", "");
 						getEl("#editor textarea").value = res.note.body;
+						last_saved_note_body = res.note.body
 						getEl("#editor #noteName").innerText = res.note.title;
 						getEl("#preview").innerHTML = marked(res.note.body);
 						if (res.note.links && res.note.links.length > 0) {
@@ -214,8 +216,13 @@
 				getEl("#editor textarea").addEventListener("keyup", e => {
 					setTimeout(function() {
 						var body = e.target.value;
-						if (last_saved_note_body == body) return;
+						if (last_saved_note_body == body) {
+							num_changes_since_save = 0;
+							getEl("#editor #numChanges").innerText = ""
+							return
+						};
 						num_changes_since_save += 1;
+						getEl("#editor #numChanges").innerText = num_changes_since_save + " changes since last save"
 						if (num_changes_since_save > 5 && autosave)
 							updateNoteBody();
 						getEl("#preview").innerHTML = marked(body);
