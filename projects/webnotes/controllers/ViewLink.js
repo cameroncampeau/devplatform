@@ -10,4 +10,8 @@ async function get(key) {
     return await DefaultDb.getCollection(COLLECTION_NAME).findOne({key})
 }
 
-module.exports = {create, get}
+async function getByNote(note_id) {
+    return await DefaultDb.getCollection(COLLECTION_NAME).find({note: note_id})
+}
+
+module.exports = {create, get,getByNote}

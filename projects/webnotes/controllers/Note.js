@@ -1,5 +1,6 @@
 var DefaultDb = require("../../../DefaultDB");
 
+const ViewLink = require("./ViewLink");
 const NOTE_COLLECTION_NAME = "md-web-notes";
 
 DefaultDb.loadCollection(NOTE_COLLECTION_NAME);
@@ -24,8 +25,11 @@ async function getByCreator(creator) {
 }
 
 async function get(id) {
-	return await DefaultDb.getCollection(NOTE_COLLECTION_NAME).findOne({
+	var note = await DefaultDb.getCollection(NOTE_COLLECTION_NAME).findOne({
 		_id: id
 	});
+	var note_links = await ViewLink.getByNote(id);
+	note.links = note_links;
+	return note; 
 }
 module.exports = { create, get, getByCreator, updateBody };
