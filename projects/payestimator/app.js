@@ -7,6 +7,11 @@ const fs = require("fs"),
 const FILE_PATH = path.resolve(__dirname + "/history.json"),
 	PAY = 30;
 
+	
+function monthStrToInt(month_str) {
+	var months = "january february march april may june july august september octover november december".split(" ");
+	return ("0" + (months.indexOf(month_str) + 1)).slice(-2)
+}
 function getHistory() {
 	return new Promise((resolve, reject) => {
 		fs.readFile(FILE_PATH, (err, data) => {
@@ -27,6 +32,7 @@ function getScheduleForMonth(month, year) {
 	function isBetween(n, min, max) {
 		return n >= min && n <= max;
 	}
+	console.log("Get Schedule for",month, year);
 	var default_schedule = [1, 2, 3, 4, 5];
 	for (var i = 0; i < schedule.length; i++) {
 		var s = schedule[i];
@@ -36,6 +42,7 @@ function getScheduleForMonth(month, year) {
 		)
 			return { daysIn: s.daysIn, avg_hours_in: s.avg_hours_in || 7 };
 	}
+	console.log("Returned default");
 	return { daysIn: default_schedule, avg_hours_in: 7 };
 }
 
@@ -133,12 +140,13 @@ function printHelp() {
 }
 function getEstimate() {
 	function printEstimate() {
-		var hours = getHours(month, days_in, year);
-		hours = hours - days_missed * 7;
+		var schedule = getScheduleForMonth(month, year);
+		var hours = getHours(month, days_in, year, schedule.avg_hours_in);
+		hours = hours - days_missed * schedule.avg_hours_in;
 		console.log(
 			"Estimating based on",
 			hours,
-			"hours (" + hours / 7,
+			"hours (" + hours / schedule.avg_hours_in,
 			"days)"
 		);
 		console.log("Simple Estimate:", estimatePay(hours));
@@ -154,19 +162,20 @@ function getEstimate() {
 			.toString()
 			.trim()
 			.replace("\r\n", "");
-		if (!days_in) {
+		if (days_in == null) {
 			days_in = data.split(" ").map(d => parseInt(d));
 			console.log("How many days did you miss?");
-		} else if (!days_missed) {
-			days_missed = parseInt(data);
+		} else if (days_missed == null) {
+			days_missed = parseFloat(data) || 0;
 			console.log("Which month? (Empty for this month)");
-		} else if (!month) {
-			if (!parseInt(data)) month = new Date().getMonth() + 1;
+		} else if (month == null) {
+			if (Number.isNaN(parseInt(data))) month = new Date().getMonth() + 1;
 			else month = parseInt(data);
 			console.log("Which year? (Empty for this year)");
 		} else {
-			if (!parseInt(data)) year = new Date().getFullYear();
+			if (Number.isNaN(parseInt(data))) year = new Date().getFullYear();
 			else year = parseInt(data);
+			console.log(days_in, days_missed, month, year);
 			printEstimate();
 			process.stdin.removeListener("data", processEstimate);
 			process.stdin.addListener("data", onInput);
@@ -196,10 +205,11 @@ async function projectYear(num_months = 12) {
 		history.forEach(h => {
 			var { pay, hours, year, month } = h;
 			var schedule = getScheduleForMonth(
-				new Date(month + "/01/19").getMonth(),
+				new Date(monthStrToInt(month) + "/01/19").getMonth(),
 				parseInt(year)
 			).daysIn;
 			var potential_hours = getHours(month, schedule, parseInt(year));
+			console.log(month, year, schedule, Math.floor((potential_hours - hours) / 7))
 			days_missed += Math.floor((potential_hours - hours) / 7);
 		});
 		return days_missed / history.length;
