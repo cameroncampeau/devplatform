@@ -186,7 +186,7 @@ function getDaysMissed() {
 	history.forEach(h => {
 		var { pay, hours, year, month } = h;
 		var schedule = getScheduleForMonth(
-			new Date(month + "/01/19").getMonth(),
+			new Date(month + "/01/19").getMonth() + 1,
 			parseInt(year)
 		);
 		var potential_hours = getHours(month, schedule.daysIn, parseInt(year));
