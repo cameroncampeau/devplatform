@@ -32,7 +32,6 @@ function getScheduleForMonth(month, year) {
 	function isBetween(n, min, max) {
 		return n >= min && n <= max;
 	}
-	console.log("Get Schedule for",month, year);
 	var default_schedule = [1, 2, 3, 4, 5];
 	for (var i = 0; i < schedule.length; i++) {
 		var s = schedule[i];
@@ -42,7 +41,6 @@ function getScheduleForMonth(month, year) {
 		)
 			return { daysIn: s.daysIn, avg_hours_in: s.avg_hours_in || 7 };
 	}
-	console.log("Returned default");
 	return { daysIn: default_schedule, avg_hours_in: 7 };
 }
 
@@ -205,7 +203,7 @@ async function projectYear(num_months = 12) {
 		history.forEach(h => {
 			var { pay, hours, year, month } = h;
 			var schedule = getScheduleForMonth(
-				new Date(monthStrToInt(month) + "/01/19").getMonth(),
+				new Date(monthStrToInt(month) + "/01/19").getMonth() + 1,
 				parseInt(year)
 			).daysIn;
 			var potential_hours = getHours(month, schedule, parseInt(year));
