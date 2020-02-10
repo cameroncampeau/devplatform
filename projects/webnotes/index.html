@@ -216,6 +216,7 @@
 				getEl("#editor textarea").addEventListener("keyup", e => {
 					setTimeout(function() {
 						var body = e.target.value;
+						getEl("#preview").innerHTML = marked(body);
 						if (last_saved_note_body == body) {
 							num_changes_since_save = 0;
 							getEl("#editor #numChanges").innerText = ""
@@ -225,7 +226,6 @@
 						getEl("#editor #numChanges").innerText = num_changes_since_save + " changes since last save"
 						if (num_changes_since_save > 5 && autosave)
 							updateNoteBody();
-						getEl("#preview").innerHTML = marked(body);
 					}, 100);
 				});
 				getEl("#editor button#createLink").addEventListener("click", e => {
