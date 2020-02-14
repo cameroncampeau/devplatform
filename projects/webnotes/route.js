@@ -67,7 +67,7 @@ route.get("/note/:id", middleware.auth, async (req, res) => {
 });
 
 const buildViewTemplate = require("./template").build;
-route.get(["/note/view/:id", "/n/v/:id"], async (req,res) => {
+route.get(["/note/view/:id", "/n/v/:id","/v/:id"], async (req,res) => {
 	try {
 		var link = await controllers.Link.get(req.params.id);
 		if (!link) return res.status(404).end("Not Found")
