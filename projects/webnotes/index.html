@@ -129,6 +129,7 @@
 				return document.body.querySelector(selector);
 			}
 			function updateNumChanges() {
+				if (num_changes_since_save == 0) return getEl("#editor #numChanges").innerText = ""
 				getEl("#editor #numChanges").innerText = num_changes_since_save + " changes since last save"
 			}
 			async function createNote(title) {
