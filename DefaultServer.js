@@ -1,6 +1,7 @@
 var express = require("express"),
 	app = express(),
 	https = require("https"),
+	http = require("http"),
 	fs = require("fs").promises,
 	session = require("express-session");
 
@@ -28,6 +29,12 @@ async function start(port) {
 			  saveUninitialized: true,
 			  cookie: { secure: true }
 		}))
+	if (port == 80) return
+	var httpApp = express();
+	httpApp.get('*', function(req, res) {  
+		res.redirect('https://' + req.headers.host + req.url);
+	})
+	httpApp.listen(80);
 }	
 
 module.exports = { addRoute, start };
