@@ -61,7 +61,7 @@
 		<div id="note" class="hidden row overflow-hidden w-100 h-100">
 			<div id="editor" class="col-12 col-lg-6 border-right">
 				<div class="details">
-					<h3 id="noteName" class="d-inline-block"></h3><span id="numChanges"></span>
+					<h3 id="noteName" class="d-inline-block"></h3><span id="numChanges"></span><span id="saveTimer" class="mx-1"></span>
 					<div class="float-right">
 						<div class="d-inline-block"  id="linkList">
 
@@ -101,6 +101,7 @@
 		<script>
 			var autosave = false;
 			var last_change = null;
+			var last_saved_change = null;
 			function showMessage(message) {
 				var messageEl = document.createElement("div");
 				messageEl.className = "w-100 text-center";
@@ -127,6 +128,23 @@
 			}
 			function getEl(selector) {
 				return document.body.querySelector(selector);
+			}
+			var save_timer = null;
+			function setSaveTimer() {
+				console.log("setSaveTimer")
+				if (save_timer) {
+					console.log("Clear")
+					clearInterval(save_timer);
+					getEl("#saveTimer").innerText = "";
+				}
+				var time_until_save = 5;
+				save_timer = setInterval(() => {
+					if (time_until_save-- > 0) return getEl("#saveTimer").innerText = `Autosaving in ${time_until_save}s`
+					
+					updateNoteBody(getEl("#editor textarea").value)
+					getEl("#saveTimer").innerText = "";
+					clearInterval(save_timer);
+				}, 1000)
 			}
 			function updateNumChanges() {
 				if (num_changes_since_save == 0) return getEl("#editor #numChanges").innerText = ""
@@ -157,6 +175,7 @@
 					.then(res => res.json())
 					.then(r => {
 						last_change = body;
+						last_saved_change = body;
 						showMessage("Note saved");
 						num_changes_since_save = 0;
 						updateNumChanges()
@@ -175,6 +194,7 @@
 						$note.className = $note.className.replace("hidden", "");
 						getEl("#editor textarea").value = res.note.body;
 						last_change = res.note.body
+						last_saved_change = res.note.body;
 						getEl("#editor #noteName").innerText = res.note.title;
 						getEl("#preview").innerHTML = marked(res.note.body);
 						if (res.note.links && res.note.links.length > 0) {
@@ -230,18 +250,37 @@
 						last_change = body;
 						num_changes_since_save += 1;
 						getEl("#editor #numChanges").innerText = num_changes_since_save + " changes since last save"
-						if (num_changes_since_save > 5 && autosave)
-							updateNoteBody();
+						if (autosave)
+							setSaveTimer();
 					}, 100);
 				});
+				getEl("#editor textarea").addEventListener("scroll", e => {
+					var percentage_scrolled = e.target.scrollTop / e.target.scrollHeight;
+					var previewEl = getEl("#preview");
+					previewEl.scrollTop = percentage_scrolled * previewEl.scrollHeight;
+				})
 				getEl("#editor button#createLink").addEventListener("click", e => {
 					e.preventDefault();
+					if (last_change != last_saved_change) {
+						if (!confirm("Note changes not saved yet! Are you sure you would like to navigate away?")) return;
+					}
 					var link_name = getEl("input#linkName").value,
 						link_id = getEl("#note").dataset.note;
 					window.location = `/webnotes/note/view/create/${link_name}/${link_id}`
 				})
 				getEl("#saveNote").addEventListener("click", e => {
 					e.preventDefault();
+					if (getEl("#editor textarea").value == last_saved_change) {
+						var btn = getEl("#saveNote");
+						if (btn.className.indexOf("text-primary") > -1) {
+							autosave = false;
+							btn.className = btn.className.replace("text-primary", "")
+						} else {
+							autosave = true;
+							btn.className += " text-primary";
+						}
+						return;
+					}
 					updateNoteBody(getEl("#editor textarea").value);
 				});
 				getEl("#noteList").addEventListener("click", e => {
