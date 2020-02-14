@@ -99,8 +99,8 @@
 			crossorigin="anonymous"
 		></script>
 		<script>
-			var last_saved_note_body = null;
 			var autosave = false;
+			var last_change = null;
 			function showMessage(message) {
 				var messageEl = document.createElement("div");
 				messageEl.className = "w-100 text-center";
@@ -128,6 +128,9 @@
 			function getEl(selector) {
 				return document.body.querySelector(selector);
 			}
+			function updateNumChanges() {
+				getEl("#editor #numChanges").innerText = num_changes_since_save + " changes since last save"
+			}
 			async function createNote(title) {
 				fetch("/webnotes/note", {
 					method: "POST",
@@ -152,9 +155,10 @@
 				})
 					.then(res => res.json())
 					.then(r => {
-						last_saved_note_body = body;
+						last_change = body;
 						showMessage("Note saved");
 						num_changes_since_save = 0;
+						updateNumChanges()
 					})
 					.catch(e => {
 						showError(e.message);
@@ -169,7 +173,7 @@
 						$note.dataset.note = id;
 						$note.className = $note.className.replace("hidden", "");
 						getEl("#editor textarea").value = res.note.body;
-						last_saved_note_body = res.note.body
+						last_change = res.note.body
 						getEl("#editor #noteName").innerText = res.note.title;
 						getEl("#preview").innerHTML = marked(res.note.body);
 						if (res.note.links && res.note.links.length > 0) {
@@ -217,11 +221,12 @@
 					setTimeout(function() {
 						var body = e.target.value;
 						getEl("#preview").innerHTML = marked(body);
-						if (last_saved_note_body == body) {
-							num_changes_since_save = 0;
-							getEl("#editor #numChanges").innerText = ""
+						if (last_change == body) {
 							return
-						};
+						} else if (last_change.indexOf(body) > -1) {
+							num_changes_since_save -= last_saved_note_body - body.length - 1;
+						}
+						last_change = body;
 						num_changes_since_save += 1;
 						getEl("#editor #numChanges").innerText = num_changes_since_save + " changes since last save"
 						if (num_changes_since_save > 5 && autosave)
