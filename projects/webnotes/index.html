@@ -244,9 +244,14 @@
           var start = change.start,
             end = change.end;
           console.log({ start, end });
+          // special case - change has a newline
+          var change_html = markdown
+            .substring(start, end)
+            .split("\n")
+            .join("<br>");
           markdown =
             markdown.substring(0, start) +
-            `<mark>${markdown.substring(start, end)}</mark>` +
+            `<mark>${change_html}</mark>` +
             markdown.substring(end, markdown.length);
         });
         console.log(markdown);
