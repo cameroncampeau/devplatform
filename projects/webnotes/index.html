@@ -204,7 +204,7 @@
               $container.innerHTML = "";
               for (link of res.note.links) {
                 $container.innerHTML += `
-									<a class="mx-2" href="/webnotes/note/view/${link.key}">${link.key}</a>
+									<a class="mx-2" href="/webnotes/v/${link.key}">${link.key}</a>
 								`;
               }
             }
