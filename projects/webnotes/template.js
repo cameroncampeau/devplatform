@@ -15,7 +15,7 @@ module.exports.get = module.exports.build = markdown => `<html>
 />
 <body>
     <div id="markdown" class="my-md-5 container p-4 border rounded"></div>
-    <textarea id="text" style="display:none">${markdown}</textarea>
+    <plaintext id="text" style="display:none">${markdown}</plaintext>
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.8.0/marked.min.js"
         integrity="sha256-fIsvyYkI1qQV1tu1PdlM4FF43kW76YCnCcl/xJCD3Fc="
