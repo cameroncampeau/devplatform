@@ -108,6 +108,9 @@
 						${message}
 					</div>
 				`;
+		messageEl.addEventListener("click", e => {
+			document.body.removeChild(messageEl);
+		})
         document.body.appendChild(messageEl);
         setTimeout(function() {
           document.body.removeChild(messageEl);
