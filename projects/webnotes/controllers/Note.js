@@ -12,10 +12,12 @@ async function create(creator, title, body) {
 }
 
 async function updateBody(id, body) {
+	var updated_doc = 	{ body, last_update: Date.now() }
 	await DefaultDb.getCollection(NOTE_COLLECTION_NAME).update(
 		{ _id: id },
-		{ body, last_update: Date.now() }
+		updated_doc
 	);
+	return updated_doc
 }
 
 async function getByCreator(creator) {

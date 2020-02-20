@@ -114,8 +114,8 @@ route.post("/note", middleware.auth, async (req, res) => {
 route.patch("/note/:id", middleware.auth, async (req, res) => {
   if (!req.body.body) return res.status(400).end("Bad Request");
   try {
-    await controllers.Note.updateBody(req.params.id, req.body.body);
-    res.json({ body: req.body.body });
+    var doc = await controllers.Note.updateBody(req.params.id, req.body.body);
+    res.json({note:doc});
   } catch (e) {
     res.status(500).end("Server Error");
   }

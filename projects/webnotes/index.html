@@ -150,12 +150,14 @@
           clearInterval(save_timer);
         }, 1000);
       }
-      function updateNumChanges() {
+	  var num_changes_since_save = 0;
+	  function setNumChanges(num) {
+		if (typeof num != "undefined") num_changes_since_save = num;
         if (num_changes_since_save == 0)
           return (getEl("#editor #numChanges").innerText = "");
         getEl("#editor #numChanges").innerText =
           num_changes_since_save + " changes since last save";
-      }
+	 } 
       async function createNote(title) {
         fetch("/webnotes/note", {
           method: "POST",
@@ -181,10 +183,10 @@
           .then(res => res.json())
           .then(r => {
             last_change = body;
-            last_saved_change = body;
+			last_saved_change = body;
+			note.last_update = r.last_update;
             showMessage("Note saved");
-            num_changes_since_save = 0;
-            updateNumChanges();
+			setNumChanges(0)
           })
           .catch(e => {
             showError(e.message);
@@ -194,12 +196,13 @@
 		  fetch("/webnotes/note/" + note._id)
 		  .then(r => r.json())
 		  .then(res => {
-			  console.log(res.note.last_update , note.last_update)
 			  if (res.note.last_update > note.last_update) {
 				  if (confirm("This note has been changed from another location. Would you like to accept the changes?")) {
 					  selectNote(note._id)
 				  }
-			  } 
+			  } else {
+					note.last_update = res.note.last_update
+			  }
 		  })
 	  }
 	  var change_check_timer = null;
@@ -370,21 +373,16 @@
         return null;
       }
       function registerHooks() {
-        var num_changes_since_save = 0;
         getEl("#editor textarea").addEventListener("keyup", e => {
           setTimeout(function() {
             var body = e.target.value;
             // No change
             if (last_change == body) return;
             var difference = getDifference(last_change, body);
-            console.log("Difference", difference);
             addChange(difference);
-            console.log(changes);
             last_change = body;
-            num_changes_since_save += 1;
+			setNumChanges(num_changes_since_save+1);
             getEl("#preview").innerHTML = marked(insertHTMLChanges(body));
-            getEl("#editor #numChanges").innerText =
-              num_changes_since_save + " changes since last save";
             if (autosave) setSaveTimer();
           }, 100);
         });
