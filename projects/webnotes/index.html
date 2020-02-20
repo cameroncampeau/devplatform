@@ -98,7 +98,8 @@
     <script>
       var autosave = false;
       var last_change = null;
-      var last_saved_change = null;
+	  var last_saved_change = null;
+	  var note = null;
       function showMessage(message) {
         var messageEl = document.createElement("div");
         messageEl.className = "w-100 text-center";
@@ -189,7 +190,19 @@
             showError(e.message);
           });
       }
-      async function selectNote(id) {
+	  async function checkForNewUpdate() {
+		  fetch("/webnotes/note/" + note._id)
+		  .then(r => r.json())
+		  .then(res => {
+			  if (res.note.last_change > note.last_change) {
+				  if (confirm("This note has been changed from another location. Would you like to accept the changes?")) {
+					  selectNote(note._id)
+				  }
+			  } 
+		  })
+	  }
+	  var change_check_timer = null;
+	  async function selectNote(id) {
         fetch("/webnotes/note/" + id)
           .then(r => r.json())
           .then(res => {
@@ -199,7 +212,10 @@
             $note.className = $note.className.replace("hidden", "");
             getEl("#editor textarea").value = res.note.body;
             last_change = res.note.body;
-            last_saved_change = res.note.body;
+			last_saved_change = res.note.body;
+			note = res.note;
+			if (change_check_timer) clearInterval(change_check_timer);
+			change_check_timer = setInterval(checkForNewUpdate, 5000);
             getEl("#editor #noteName").innerText = res.note.title;
             getEl("#preview").innerHTML = marked(res.note.body);
             if (res.note.links && res.note.links.length > 0) {

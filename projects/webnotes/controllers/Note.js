@@ -6,7 +6,7 @@ const NOTE_COLLECTION_NAME = "md-web-notes";
 DefaultDb.loadCollection(NOTE_COLLECTION_NAME);
 
 async function create(creator, title, body) {
-	var doc = { creator, title, body };
+	var doc = { creator, title, body,last_update: Date.now() };
 	await DefaultDb.saveItem(NOTE_COLLECTION_NAME, doc);
 	return doc;
 }
@@ -14,7 +14,7 @@ async function create(creator, title, body) {
 async function updateBody(id, body) {
 	await DefaultDb.getCollection(NOTE_COLLECTION_NAME).update(
 		{ _id: id },
-		{ body }
+		{ body, last_update: Date.now() }
 	);
 }
 
