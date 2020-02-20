@@ -194,7 +194,7 @@
 		  fetch("/webnotes/note/" + note._id)
 		  .then(r => r.json())
 		  .then(res => {
-			  if (res.note.last_change > note.last_change) {
+			  if (res.note.last_update > note.last_update) {
 				  if (confirm("This note has been changed from another location. Would you like to accept the changes?")) {
 					  selectNote(note._id)
 				  }
