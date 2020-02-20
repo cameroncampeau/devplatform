@@ -193,7 +193,7 @@
           });
       }
 	  async function checkForNewUpdate() {
-		  fetch("/webnotes/note/" + note._id)
+		  fetch("/webnotes/note/" + note._id + "?field=last_update")
 		  .then(r => r.json())
 		  .then(res => {
 			  if (res.note.last_update > note.last_update) {

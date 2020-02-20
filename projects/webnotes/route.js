@@ -60,7 +60,13 @@ route.get(["/note", "/n"], middleware.auth, async (req, res) => {
 route.get("/note/:id", middleware.auth, async (req, res) => {
   try {
     var note = await controllers.Note.get(req.params.id);
-    res.json({ note });
+    if (!req.query.field) {
+      res.json({ note });
+    } else {
+      res.json({note: {
+        [req.query.field]: note[req.query.field]
+      }})
+    }
   } catch (e) {
     res.status(500).end("Server Error");
   }
