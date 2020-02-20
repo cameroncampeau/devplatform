@@ -1,450 +1,500 @@
 <html>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link
-    rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-  />
-  <link
-    href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-    rel="stylesheet"
-    integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
-    crossorigin="anonymous"
-  />
-  <style>
-    mark {
-      background-color: yellow !important;
-    }
-    .hidden {
-      display: none !important;
-      opacity: 0 !important;
-      height: 0px !important;
-    }
-    #error,
-    #message {
-      position: fixed;
-      top: 5px !important;
-    }
-    #editor textarea {
-      height: calc(100vh - 3em);
-    }
-    #preview {
-      height: 100vh;
-    }
-    @media screen and (max-width: 992px) {
-      #editor textarea {
-        height: calc(50vh - 3em);
-      }
-      #preview {
-        height: 50vh;
-      }
-    }
-    @media print {
-      body > *:not(#preview) {
-        height: 0 !important;
-        display: none !important;
-      }
-    }
-  </style>
-  <body style="height: 100vh;">
-    <div
-      id="auth"
-      class=" w-100 h-100 d-flex justify-content-center align-items-center position-fixed bg-dark"
-      style="z-index: 9999999;"
-    >
-      <div class="p-4 bg-light">
-        <form id="login">
-          <input type="text" id="username" /><br />
-          <input type="password" id="password" />
-          <button class="btn btn-primary float-right">Login</button>
-        </form>
-      </div>
-    </div>
-    <div id="note" class="hidden row overflow-hidden w-100 h-100">
-      <div id="editor" class="col-12 col-lg-6 border-right">
-        <div class="details">
-          <h3 id="noteName" class="d-inline-block"></h3>
-          <span id="numChanges"></span><span id="saveTimer" class="mx-1"></span>
-          <div class="float-right">
-            <div class="d-inline-block" id="linkList"></div>
-            <div class="d-inline-block" id="link">
-              <input type="text" id="linkName" />
-              <button id="createLink" class="btn-primary">
-                <i class="fa fa-link"></i>
-              </button>
-              <i id="saveNote" class="fa fa-2x fa-save"></i>
-            </div>
-          </div>
-        </div>
-        <textarea class="w-100" name="" id="" cols="30" rows="10"></textarea>
-      </div>
-      <div
-        id="preview"
-        class="col-12 col-lg-6 py-3 bg-light overflow-auto"
-      ></div>
-    </div>
-    <div id="noteList">
-      <div class="create">
-        <input id="noteTitle" type="text" placeholder="Title" />
-        <button id="createNote">Create</button>
-      </div>
-      <div class="list list-group"></div>
-    </div>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.8.0/marked.min.js"
-      integrity="sha256-fIsvyYkI1qQV1tu1PdlM4FF43kW76YCnCcl/xJCD3Fc="
-      crossorigin="anonymous"
-    ></script>
-    <script>
-      var autosave = false;
-      var last_change = null;
-	  var last_saved_change = null;
-	  var note = null;
-      function showMessage(message) {
-        var messageEl = document.createElement("div");
-        messageEl.className = "w-100 text-center";
-        messageEl.id = "message";
-        messageEl.innerHTML += `
+	<link
+		rel="stylesheet"
+		href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+	/>
+	<link
+		href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+		rel="stylesheet"
+		integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+		crossorigin="anonymous"
+	/>
+	<style>
+		mark {
+			background-color: yellow !important;
+		}
+		.hidden {
+			display: none !important;
+			opacity: 0 !important;
+			height: 0px !important;
+		}
+		#error,
+		#message {
+			position: fixed;
+			top: 5px !important;
+		}
+		#editor textarea {
+			height: calc(100vh - 3em);
+		}
+		#preview {
+			height: 100vh;
+		}
+		@media screen and (max-width: 992px) {
+			#editor textarea {
+				height: calc(50vh - 3em);
+			}
+			#preview {
+				height: 50vh;
+			}
+		}
+		@media print {
+			body > *:not(#preview) {
+				height: 0 !important;
+				display: none !important;
+			}
+		}
+	</style>
+	<body style="height: 100vh;">
+		<div
+			id="auth"
+			class=" w-100 h-100 d-flex justify-content-center align-items-center position-fixed bg-dark"
+			style="z-index: 9999999;"
+		>
+			<div class="p-4 bg-light">
+				<form id="login">
+					<input type="text" id="username" /><br />
+					<input type="password" id="password" />
+					<button class="btn btn-primary float-right">Login</button>
+				</form>
+			</div>
+		</div>
+		<div id="note" class="hidden row overflow-hidden w-100 h-100">
+			<div id="editor" class="col-12 col-lg-6 border-right">
+				<div class="details">
+					<h3 id="noteName" class="d-inline-block"></h3>
+					<span id="numChanges"></span
+					><span id="saveTimer" class="mx-1"></span>
+					<div class="float-right">
+						<div class="d-inline-block" id="linkList"></div>
+						<div class="d-inline-block" id="link">
+							<input type="text" id="linkName" />
+							<button id="createLink" class="btn-primary">
+								<i class="fa fa-link"></i>
+							</button>
+							<i id="saveNote" class="fa fa-2x fa-save"></i>
+						</div>
+					</div>
+				</div>
+				<textarea
+					class="w-100"
+					name=""
+					id=""
+					cols="30"
+					rows="10"
+				></textarea>
+			</div>
+			<div
+				id="preview"
+				class="col-12 col-lg-6 py-3 bg-light overflow-auto"
+			></div>
+		</div>
+		<div id="noteList">
+			<div class="create">
+				<input id="noteTitle" type="text" placeholder="Title" />
+				<button id="createNote">Create</button>
+			</div>
+			<div class="list list-group"></div>
+		</div>
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.8.0/marked.min.js"
+			integrity="sha256-fIsvyYkI1qQV1tu1PdlM4FF43kW76YCnCcl/xJCD3Fc="
+			crossorigin="anonymous"
+		></script>
+		<script>
+			var autosave = false;
+			var last_change = null;
+			var last_saved_change = null;
+			var note = null;
+			function showMessage(message) {
+				var messageEl = document.createElement("div");
+				messageEl.className = "w-100 text-center";
+				messageEl.id = "message";
+				messageEl.innerHTML += `
 				<div class="alert alert-primary mx-2 d-inline-block">
 						${message}
 					</div>
 				`;
-		messageEl.addEventListener("click", e => {
-			document.body.removeChild(messageEl);
-		})
-        document.body.appendChild(messageEl);
-        setTimeout(function() {
-          document.body.removeChild(messageEl);
-        }, 6000);
-      }
-      function showError(message) {
-        document.body.innerHTML += `
+				messageEl.addEventListener("click", e => {
+					document.body.removeChild(messageEl);
+				});
+				document.body.appendChild(messageEl);
+				setTimeout(function() {
+					document.body.removeChild(messageEl);
+				}, 6000);
+			}
+			function showError(message) {
+				document.body.innerHTML += `
 					<div id="error" class="fixed mx-3 my-2 text-center bg-danger text-white py-2 " style="top:0">
 						${message}
 						</div>
 				`;
-        setTimeout(function() {
-          document.body.removeChild(getEl("#error"));
-        }, 6000);
-      }
-      function getEl(selector) {
-        return document.body.querySelector(selector);
-      }
-      var save_timer = null;
-      function setSaveTimer() {
-        console.log("setSaveTimer");
-        if (save_timer) {
-          console.log("Clear");
-          clearInterval(save_timer);
-          getEl("#saveTimer").innerText = "";
-        }
-        var time_until_save = 5;
-        save_timer = setInterval(() => {
-          if (time_until_save-- > 0)
-            return (getEl(
-              "#saveTimer"
-            ).innerText = `Autosaving in ${time_until_save}s`);
+				setTimeout(function() {
+					document.body.removeChild(getEl("#error"));
+				}, 6000);
+			}
+			function getEl(selector) {
+				return document.body.querySelector(selector);
+			}
+			var save_timer = null;
+			function setSaveTimer() {
+				console.log("setSaveTimer");
+				if (save_timer) {
+					console.log("Clear");
+					clearInterval(save_timer);
+					getEl("#saveTimer").innerText = "";
+				}
+				var time_until_save = 5;
+				save_timer = setInterval(() => {
+					if (time_until_save-- > 0)
+						return (getEl(
+							"#saveTimer"
+						).innerText = `Autosaving in ${time_until_save}s`);
 
-          updateNoteBody(getEl("#editor textarea").value);
-          getEl("#saveTimer").innerText = "";
-          clearInterval(save_timer);
-        }, 1000);
-      }
-	  var num_changes_since_save = 0;
-	  function setNumChanges(num) {
-		if (typeof num != "undefined") num_changes_since_save = num;
-        if (num_changes_since_save == 0)
-          return (getEl("#editor #numChanges").innerText = "");
-        getEl("#editor #numChanges").innerText =
-          num_changes_since_save + " changes since last save";
-	 } 
-      async function createNote(title) {
-        fetch("/webnotes/note", {
-          method: "POST",
-          body: JSON.stringify({ title }),
-          headers: {
-            "Content-Type": "application/json"
-          }
-        })
-          .then(r => r.json())
-          .then(res => {
-            selectNote(res.note._id);
-          });
-      }
-      async function updateNoteBody(body) {
-        var note_id = getEl("#note").dataset.note;
-        fetch("/webnotes/note/" + note_id, {
-          method: "PATCH",
-          body: JSON.stringify({ body }),
-          headers: {
-            "Content-Type": "application/json"
-          }
-        })
-          .then(res => res.json())
-          .then(r => {
-            last_change = body;
-			last_saved_change = body;
-			note.last_update = r.last_update;
-            showMessage("Note saved");
-			setNumChanges(0)
-          })
-          .catch(e => {
-            showError(e.message);
-          });
-      }
-	  async function checkForNewUpdate() {
-		  fetch("/webnotes/note/" + note._id + "?field=last_update")
-		  .then(r => r.json())
-		  .then(res => {
-			  if (res.note.last_update > note.last_update) {
-				  if (confirm("This note has been changed from another location. Would you like to accept the changes?")) {
-					  selectNote(note._id)
-				  }
-			  } else {
-					note.last_update = res.note.last_update
-			  }
-		  })
-	  }
-	  var change_check_timer = null;
-	  async function selectNote(id) {
-        fetch("/webnotes/note/" + id)
-          .then(r => r.json())
-          .then(res => {
-            getEl("#noteList").className += " hidden";
-            var $note = getEl("#note");
-            $note.dataset.note = id;
-            $note.className = $note.className.replace("hidden", "");
-            getEl("#editor textarea").value = res.note.body;
-            last_change = res.note.body;
-			last_saved_change = res.note.body;
-			note = res.note;
-			if (change_check_timer) clearInterval(change_check_timer);
-			change_check_timer = setInterval(checkForNewUpdate, 5000);
-            getEl("#editor #noteName").innerText = res.note.title;
-            getEl("#preview").innerHTML = marked(res.note.body);
-            if (res.note.links && res.note.links.length > 0) {
-              var $container = getEl("#linkList");
-              $container.innerHTML = "";
-              for (link of res.note.links) {
-                $container.innerHTML += `
+					updateNoteBody(getEl("#editor textarea").value);
+					getEl("#saveTimer").innerText = "";
+					clearInterval(save_timer);
+				}, 1000);
+			}
+			var num_changes_since_save = 0;
+			function setNumChanges(num) {
+				if (typeof num != "undefined") num_changes_since_save = num;
+				if (num_changes_since_save == 0)
+					return (getEl("#editor #numChanges").innerText = "");
+				getEl("#editor #numChanges").innerText =
+					num_changes_since_save + " changes since last save";
+			}
+			async function createNote(title) {
+				fetch("/webnotes/note", {
+					method: "POST",
+					body: JSON.stringify({ title }),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(r => r.json())
+					.then(res => {
+						selectNote(res.note._id);
+					});
+			}
+			async function updateNoteBody(body) {
+				var note_id = getEl("#note").dataset.note;
+				fetch("/webnotes/note/" + note_id, {
+					method: "PATCH",
+					body: JSON.stringify({ body }),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(res => res.json())
+					.then(r => {
+						last_change = body;
+						last_saved_change = body;
+						note.last_update = r.last_update;
+						showMessage("Note saved");
+						setNumChanges(0);
+					})
+					.catch(e => {
+						showError(e.message);
+					});
+			}
+			async function checkForNewUpdate() {
+				fetch("/webnotes/note/" + note._id + "?field=last_update")
+					.then(r => r.json())
+					.then(res => {
+						if (res.note.last_update > note.last_update) {
+							if (
+								confirm(
+									"This note has been changed from another location. Would you like to accept the changes?"
+								)
+							) {
+								selectNote(note._id);
+							}
+						} else {
+							note.last_update = res.note.last_update;
+						}
+					});
+			}
+			var change_check_timer = null;
+			async function selectNote(id) {
+				function setNoteLinks(links) {
+					var $container = getEl("#linkList");
+					$container.innerHTML = "";
+					for (link of links) {
+						$container.innerHTML += `
 									<a class="mx-2" href="/webnotes/v/${link.key}">${link.key}</a>
 								`;
-              }
-            }
-          });
-      }
-      async function refreshNotes() {
-        fetch("/webnotes/note")
-          .then(r => r.json())
-          .then(res => {
-            var $container = getEl("#noteList div.list");
-            $container.innerHTML = "";
-            res.notes.forEach(n => {
-              $container.innerHTML += `
+					}
+				}
+				fetch("/webnotes/note/" + id)
+					.then(r => r.json())
+					.then(res => {
+						getEl("#noteList").className += " hidden";
+
+						// Note
+						var $note = getEl("#note");
+						$note.dataset.note = id;
+						$note.className = $note.className.replace("hidden", "");
+
+						// Title
+						getEl("#editor #noteName").innerText = res.note.title;
+
+						// Body
+						getEl("#editor textarea").value = res.note.body;
+						last_change = res.note.body;
+						last_saved_change = res.note.body;
+						note = res.note;
+						if (change_check_timer)
+							clearInterval(change_check_timer);
+						change_check_timer = setInterval(
+							checkForNewUpdate,
+							5000
+						);
+						// Preview
+						getEl("#preview").innerHTML = marked(res.note.body);
+
+						// Links
+						if (res.note.links) setNoteLinks(res.note.links);
+					});
+			}
+			async function refreshNotes() {
+				fetch("/webnotes/note")
+					.then(r => r.json())
+					.then(res => {
+						var $container = getEl("#noteList div.list");
+						$container.innerHTML = "";
+						res.notes.forEach(n => {
+							$container.innerHTML += `
 							<a id="${n._id}" class="note list-group-item" href="#">${n.title}</a>
 						`;
-            });
-          });
-      }
-      async function login(username, password) {
-        await fetch("/webnotes/login", {
-          method: "POST",
-          body: JSON.stringify({ username, password }),
-          headers: {
-            "Content-Type": "application/json"
-          }
-        })
-          .then(t => t.json())
-          .then(user => {
-            document.body.querySelector("#auth").className += " hidden";
-            refreshNotes();
-          });
-      }
-      var changes = [];
-      function insertHTMLChanges(markdown) {
-        var sorted_changes = changes.sort((a, b) => b.end - a.end);
-        sorted_changes.forEach((change, i) => {
-          var start = change.start,
-            end = change.end;
-          console.log({ start, end });
-          // special case - change has a newline
-          var change_html = markdown
-            .substring(start, end)
-            .split("\n")
-            .join("<br>");
-          markdown =
-            markdown.substring(0, start) +
-            `<mark>${change_html}</mark>` +
-            markdown.substring(end, markdown.length);
-        });
-        console.log(markdown);
-        return markdown;
-      }
-      function addChange(difference) {
-        function isBetween(x, min, max) {
-          return x >= min && x <= max;
-        }
-        var [str, idx, isDeletion] = difference;
-        var start = idx,
-          end = idx + str.length;
-        if (isDeletion) {
-          for (var i = 0; i < changes.length; i++) {
-            var change = changes[i];
-            if (start > change.end) continue;
-            if (isBetween(start, change.start, change.end)) {
-              change.end = start;
-            } else if (isBetween(end, change.start, change.end)) {
-              change.start = end;
-            } else {
-              // New change added before, must shift the start and end to match the new string
-              change.start -= str.length;
-              change.end -= str.length;
-            }
-            // Change finished
-            if (change.start - change.end >= 0) {
-              changes.splice(i, 1);
-            }
-          }
-          return;
-        }
-        for (change of changes) {
-          if (start > change.end) continue;
-          if (
-            isBetween(start, change.start, change.end) ||
-            isBetween(end, change.start, change.end)
-          ) {
-            change.start = Math.min(change.start, start);
-            change.end = Math.max(change.end, end);
-            return;
-          } else {
-            // New change added before, must shift the start and end to match the new string
-            change.start += str.length;
-            change.end += str.length;
-            continue;
-          }
-        }
-        changes.push({ start, end });
-      }
+						});
+					});
+			}
+			async function login(username, password) {
+				await fetch("/webnotes/login", {
+					method: "POST",
+					body: JSON.stringify({ username, password }),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(t => t.json())
+					.then(user => {
+						document.body.querySelector("#auth").className +=
+							" hidden";
+						refreshNotes();
+					});
+			}
+			var changes = [];
+			function insertHTMLChanges(markdown) {
+				return markdown;
+				var sorted_changes = changes.sort((a, b) => b.end - a.end);
+				sorted_changes.forEach((change, i) => {
+					var start = change.start,
+						end = change.end;
+					console.log({ start, end });
+					// special case - change has a newline
+					var change_html = markdown
+						.substring(start, end)
+						.split("\n")
+						.join("<br>");
+					markdown =
+						markdown.substring(0, start) +
+						`<mark>${change_html}</mark>` +
+						markdown.substring(end, markdown.length);
+				});
+				return markdown;
+			}
+			function addChange(difference) {
+				function isBetween(x, min, max) {
+					return x >= min && x <= max;
+				}
+				var [str, idx, isDeletion] = difference;
+				var start = idx,
+					end = idx + str.length;
+				if (isDeletion) {
+					for (var i = 0; i < changes.length; i++) {
+						var change = changes[i];
+						if (start > change.end) continue;
+						if (isBetween(start, change.start, change.end)) {
+							change.end = start;
+						} else if (isBetween(end, change.start, change.end)) {
+							change.start = end;
+						} else {
+							// New change added before, must shift the start and end to match the new string
+							change.start -= str.length;
+							change.end -= str.length;
+						}
+						// Change finished
+						if (change.start - change.end >= 0) {
+							changes.splice(i, 1);
+						}
+					}
+					return;
+				}
+				for (change of changes) {
+					if (start > change.end) continue;
+					if (
+						isBetween(start, change.start, change.end) ||
+						isBetween(end, change.start, change.end)
+					) {
+						change.start = Math.min(change.start, start);
+						change.end = Math.max(change.end, end);
+						return;
+					} else {
+						// New change added before, must shift the start and end to match the new string
+						change.start += str.length;
+						change.end += str.length;
+						continue;
+					}
+				}
+				changes.push({ start, end });
+			}
 
-      function getDifference(before, after) {
-        for (var i = 0; i < before.length; i++) {
-          if (before[i] != after[i]) {
-            // Deletion Case
-            if (before.length > after.length) {
-              // mid-chunk deletion
-              if (
-                before.substring(
-                  i + (before.length - after.length),
-                  before.length
-                ) == after.substring(i, after.length)
-              )
-                return [
-                  before.substring(i, i + (before.length - after.length)),
-                  i,
-                  true
-                ];
-              // dont know what the other case would be yet
-              console.error(
-                "Unknown case reached",
-                "\n",
-                before,
-                "\n",
-                after,
-                "\n",
-                i
-              );
-            }
-            // addition case
-            for (var j = i + 1; j < after.length; j++) {
-              if (before[i] == after[j])
-                return [after.substring(i, j), i, false];
-            }
-            // New string goes longer than the old one
-            return [after.substring(i, after.length), i, false];
-          }
-        }
-        if (after.length > before.length)
-          return [
-            after.substring(before.length, after.length),
-            before.length,
-            false
-          ];
+			function getDifference(before, after) {
+				for (var i = 0; i < before.length; i++) {
+					if (before[i] != after[i]) {
+						// Deletion Case
+						if (before.length > after.length) {
+							// mid-chunk deletion
+							if (
+								before.substring(
+									i + (before.length - after.length),
+									before.length
+								) == after.substring(i, after.length)
+							)
+								return [
+									before.substring(
+										i,
+										i + (before.length - after.length)
+									),
+									i,
+									true
+								];
+							// dont know what the other case would be yet
+							console.error(
+								"Unknown case reached",
+								"\n",
+								before,
+								"\n",
+								after,
+								"\n",
+								i
+							);
+						}
+						// addition case
+						for (var j = i + 1; j < after.length; j++) {
+							if (before[i] == after[j])
+								return [after.substring(i, j), i, false];
+						}
+						// New string goes longer than the old one
+						return [after.substring(i, after.length), i, false];
+					}
+				}
+				if (after.length > before.length)
+					return [
+						after.substring(before.length, after.length),
+						before.length,
+						false
+					];
 
-        return null;
-      }
-      function registerHooks() {
-        getEl("#editor textarea").addEventListener("keyup", e => {
-          setTimeout(function() {
-            var body = e.target.value;
-            // No change
-            if (last_change == body) return;
-            var difference = getDifference(last_change, body);
-            addChange(difference);
-            last_change = body;
-			setNumChanges(num_changes_since_save+1);
-            getEl("#preview").innerHTML = marked(insertHTMLChanges(body));
-            if (autosave) setSaveTimer();
-          }, 100);
-        });
-        getEl("#editor textarea").addEventListener("scroll", e => {
-          var percentage_scrolled = e.target.scrollTop / e.target.scrollHeight;
-          var previewEl = getEl("#preview");
-          previewEl.scrollTop = percentage_scrolled * previewEl.scrollHeight;
-        });
-        getEl("#editor button#createLink").addEventListener("click", e => {
-          e.preventDefault();
-          if (last_change != last_saved_change) {
-            if (
-              !confirm(
-                "Note changes not saved yet! Are you sure you would like to navigate away?"
-              )
-            )
-              return;
-          }
-          var link_name = getEl("input#linkName").value,
-            link_id = getEl("#note").dataset.note;
-          window.location = `/webnotes/note/view/create/${link_name}/${link_id}`;
-        });
-        getEl("#saveNote").addEventListener("click", e => {
-          e.preventDefault();
-          if (getEl("#editor textarea").value == last_saved_change) {
-            var btn = getEl("#saveNote");
-            if (btn.className.indexOf("text-primary") > -1) {
-              autosave = false;
-              btn.className = btn.className.replace("text-primary", "");
-            } else {
-              autosave = true;
-              btn.className += " text-primary";
-            }
-            return;
-          }
-          updateNoteBody(getEl("#editor textarea").value);
-        });
-        getEl("#noteList").addEventListener("click", e => {
-          if (e.target.className.indexOf("note") == -1) return;
-          selectNote(e.target.id);
-        });
+				return null;
+			}
+			function registerHooks() {
+				// Register editor changes
+				getEl("#editor textarea").addEventListener("keyup", e => {
+					setTimeout(function() {
+						var body = e.target.value;
+						// No change
+						if (last_change == body) return;
+						var difference = getDifference(last_change, body);
+						addChange(difference);
+						last_change = body;
+						setNumChanges(num_changes_since_save + 1);
+						getEl("#preview").innerHTML = marked(
+							insertHTMLChanges(body)
+						);
+						if (autosave) setSaveTimer();
+					}, 100);
+				});
 
-        getEl("#auth form").addEventListener("submit", e => {
-          e.preventDefault();
-          var username = getEl("#username").value;
-          var password = getEl("#password").value;
+				// Sync editor and preview scrolling
+				getEl("#editor textarea").addEventListener("scroll", e => {
+					var percentage_scrolled =
+						e.target.scrollTop / e.target.scrollHeight;
+					var previewEl = getEl("#preview");
+					previewEl.scrollTop =
+						percentage_scrolled * previewEl.scrollHeight;
+				});
 
-          login(username, password);
-        });
-        getEl("#createNote").addEventListener("click", e => {
-          e.preventDefault();
-          createNote(getEl("#noteTitle").value);
-        });
-      }
-      function init() {
-        marked.setOptions({
-          headerIds: false
-        });
-        registerHooks();
-        login();
-      }
-      window.onload = init;
-    </script>
-  </body>
+				// Create a view link
+				getEl("#editor button#createLink").addEventListener(
+					"click",
+					e => {
+						e.preventDefault();
+						if (last_change != last_saved_change) {
+							if (
+								!confirm(
+									"Note changes not saved yet! Are you sure you would like to navigate away?"
+								)
+							)
+								return;
+						}
+						var link_name = getEl("input#linkName").value,
+							link_id = getEl("#note").dataset.note;
+						window.location = `/webnotes/note/view/create/${link_name}/${link_id}`;
+					}
+				);
+				// Save note
+				getEl("#saveNote").addEventListener("click", e => {
+					e.preventDefault();
+					if (getEl("#editor textarea").value == last_saved_change) {
+						var btn = getEl("#saveNote");
+						if (btn.className.indexOf("text-primary") > -1) {
+							autosave = false;
+							btn.className = btn.className.replace(
+								"text-primary",
+								""
+							);
+						} else {
+							autosave = true;
+							btn.className += " text-primary";
+						}
+						return;
+					}
+					updateNoteBody(getEl("#editor textarea").value);
+				});
+
+				// Select a note from note list
+				getEl("#noteList").addEventListener("click", e => {
+					if (e.target.className.indexOf("note") == -1) return;
+					selectNote(e.target.id);
+				});
+
+				// Login
+				getEl("#auth form").addEventListener("submit", e => {
+					e.preventDefault();
+					var username = getEl("#username").value;
+					var password = getEl("#password").value;
+
+					login(username, password);
+				});
+
+				// Create a note
+				getEl("#createNote").addEventListener("click", e => {
+					e.preventDefault();
+					createNote(getEl("#noteTitle").value);
+				});
+			}
+			function init() {
+				marked.setOptions({
+					headerIds: false
+				});
+				registerHooks();
+				login();
+			}
+			window.onload = init;
+		</script>
+	</body>
 </html>
