@@ -1,0 +1,99 @@
+<html>
+	<head>
+		<link
+			href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+			crossorigin="anonymous"
+		/>
+		<style type="text/css">
+			#raw_table {
+				max-height: 100vh;
+				overflow-y: auto;
+				overflow-x: hidden;
+			}
+			#raw_table #head > div {
+				font-weight: bold;
+				border-collapse: collapse;
+				border: 1px solid lightgrey;
+				cursor: pointer;
+			}
+			#raw_table #body > div > div {
+				border-collapse: collapse;
+				border-right: 1px solid lightgrey;
+				border-bottom: 1px solid lightgrey;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div id="raw_table">
+				<div id="head" class="row"></div>
+				<div id="body"></div>
+			</div>
+		</div>
+		<script>
+			var data = null,
+				sort = {};
+			async function getData() {
+				return await fetch("/covid/data").then(r => r.json());
+			}
+			async function updateRawTable(data) {
+				function createColumnEl(column) {
+					var el = document.createElement("div");
+					el.innerText = column;
+					el.className = "col"; //"col-" + 24 / data.columns.length;
+					return el;
+				}
+				var table_container = document.querySelector("#raw_table");
+				var header_container = table_container.querySelector(
+					"div#head"
+				);
+				header_container.innerHTML = "";
+				data.columns.forEach(column => {
+					header_container.appendChild(createColumnEl(column));
+				});
+				var body_container = table_container.querySelector("div#body");
+				body_container.innerHTML = "";
+				data.rows.forEach(row => {
+					var row_container = document.createElement("div");
+					row_container.className = "row";
+					for (column in row) {
+						row_container.appendChild(createColumnEl(row[column]));
+					}
+					body_container.appendChild(row_container);
+				});
+				table_container.appendChild(header_container);
+				table_container.appendChild(body_container);
+			}
+			function sortBy(column) {
+				if (column in sort) {
+					sort[column] = !sort[column];
+				} else sort[column] = true;
+				data.rows = data.rows.sort((a, b) => {
+					if (sort[column] === true) return b[column] - a[column];
+					return a[column] - b[column];
+				});
+
+				updateRawTable(data);
+			}
+
+			async function init() {
+				function registerHooks() {
+					document
+						.querySelector("#raw_table #head")
+						.addEventListener("click", e => {
+							var el = e.target;
+							if (el.className == "col") {
+								sortBy(el.innerText);
+							}
+						});
+				}
+				registerHooks();
+				data = await getData();
+				updateRawTable(data);
+			}
+			init();
+		</script>
+	</body>
+</html>
