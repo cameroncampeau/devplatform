@@ -207,7 +207,6 @@ async function projectYear(num_months = 12) {
 				parseInt(year)
 			).daysIn;
 			var potential_hours = getHours(month, schedule, parseInt(year));
-			console.log(month, year, schedule, Math.floor((potential_hours - hours) / 7))
 			days_missed += Math.floor((potential_hours - hours) / 7);
 		});
 		return days_missed / history.length;
