@@ -87,7 +87,68 @@ async function getDb(time) {
 function mostRecentDb(DBs) {
 	return Math.max.apply(this, DBs);
 }
+const simpleFit = require("simple-linear-regression");
+const regression = require("regression");
+function regressionAnalysis(Xs, Ys) {
+	//return simpleFit(Xs, Ys);
+	function mergeTwoArraysToTupleArray() {
+		return Xs.map((x, i) => [x, Ys[i]]);
+	}
+	var merged_xys = mergeTwoArraysToTupleArray();
+	return {
+		linear: regression.linear(merged_xys).equation,
+		exponential: regression.exponential(merged_xys).equation,
+		logarithmic: regression.logarithmic(merged_xys).equation,
+		power: regression.power(merged_xys).equation,
+		polynomial: regression.polynomial(merged_xys).equation
+	};
+}
+var regression_interval = 1000 * 60 * 60 * 24;
+async function getDataProgressionStats(country=null, end_date=null) {
+	function getAllTotals(data) {
+		var totals = {};
+		for (col of progression_columns) totals[col] = 0;
+		for (row of data.rows) {
+			for (col of progression_columns) {
+				totals[col] += row[col];
+			}
+		}
+		return totals;
+	}
+	function getAllCountryTotals(data, country) {
+		return data.rows.find(row => row.Country == country);
+	}
+	var progression_columns = "TotalCases NewCases TotalDeaths ActiveCases NewDeaths Serious".split(
+		" "
+	);
+	var saves = (await getSavedDbs()).sort((a, b) => {
+		return a - b;
+	});
+	if (end_date) saves = saves.filter(save => save < end_date);
+	var promises = [];
+	for (save_time of saves) promises.push(getDb(save_time));
+	var totals = (await Promise.all(promises)).map(saved_data => {
+		if (country) return getAllCountryTotals(saved_data, country)
+		else return getAllTotals(saved_data)
+	}
+	);
 
+	var start_save = saves[0];
+	var Xs = saves.map(s => (s - start_save) / regression_interval); 
+	var regression_analysis = progression_columns.map(col => {
+		return [
+			col,
+			regressionAnalysis(
+				Xs,
+				totals.map(t => t[col])
+			)
+		];
+	});
+	return { start: start_save, analysis: regression_analysis };
+}
+function regressionProject(regression_stats, x) {
+	return regression_stats.a * x + regression_stats.b;
+}
 async function getData() {
 	var saved_data = await getSavedDbs();
 	var most_recent_db = Math.max(mostRecentDb(saved_data) || 0, 0);
@@ -122,4 +183,4 @@ function DataSet(data) {
 	};
 }
 
-module.exports = { get: getData };
+module.exports = { get: getData, getDataProgressionStats };

@@ -6,6 +6,12 @@
 			integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
 			crossorigin="anonymous"
 		/>
+		<link
+			href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+			rel="stylesheet"
+			integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+			crossorigin="anonymous"
+		/>
 		<style type="text/css">
 			#raw_table {
 				max-height: 100vh;
@@ -23,28 +29,144 @@
 				border-right: 1px solid lightgrey;
 				border-bottom: 1px solid lightgrey;
 			}
+			.col-success {
+				background-color: rgba(40, 167, 69, 0.6);
+			}
+			.col-warning {
+				background-color: rgba(255, 193, 7, 0.6);
+			}
+			.col-danger {
+				background-color: rgba(220, 53, 69, 0.6);
+			}
 		</style>
 	</head>
 	<body>
+		<h1 class="text-center container  mb-5">
+			Covid Tracker<br />
+			<small style="font-size: 0.4em;"
+				>Tracking since March 5th, 2020</small
+			>
+		</h1>
 		<div class="container">
+			<div id="graphs" class=" mb-5">
+				<div class="m-5">
+					<h4 class="text-center">Active Cases in Canada (Projection) <i class="fa fa-flag-canada"></i></h4>
+					<canvas id="totalCasesCanada"></canvas>
+				</div>
+				<div class="m-5">
+					<h4 class="text-center">Total Cases Worldwide (Projection)</h4>
+					<canvas id="totalCases"></canvas>
+				</div>
+			</div>
 			<div id="raw_table">
+				<div id="stats"></div>
 				<div id="head" class="row"></div>
 				<div id="body"></div>
 			</div>
 		</div>
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js"
+			integrity="sha256-TQq84xX6vkwR0Qs1qH5ADkP+MvH0W+9E7TdHJsoIQiM="
+			crossorigin="anonymous"
+		></script>
 		<script>
+			const day = 1000 * 60 * 60 * 24;
+			const PROGRESSION_INTERVAL = day;
+			const PROGRESSION_DAYS = 30;
+
 			var data = null,
 				sort = {};
+			var graph = {
+				bar: function(x, y, ctx) {
+					return Chart.Bar(ctx, {
+						data: {
+							labels: x,
+							datasets: [
+								{
+									data: y
+								}
+							]
+						}
+					});
+				},
+				line: function(x, y, ctx) {
+					return Chart.Line(ctx, {
+						data: {
+							labels: x,
+							datasets: [
+								{
+									data: x.map((xval, i) => {
+										return { x: xval, y: y[i] };
+									})
+								}
+							]
+						}
+					});
+				},
+				lines: function(lines, ctx, opt) {
+					var colours = [
+						"green",
+						"red",
+						"blue",
+						"purple",
+						"orange",
+						"grey",
+						"black"
+					];
+					return Chart.Line(ctx, {
+						data: {
+							labels: lines[0][0],
+							datasets: lines.map((line, i) => {
+								return {
+									borderColor: colours[i % colours.length],
+									fill: false,
+									label: opt.labels[i] || "",
+									data: line[0].map((xval, i) => {
+										return {
+											label: "abc",
+											labelString: "hello",
+											x: xval,
+											y: line[1][i]
+										};
+									})
+								};
+							})
+						}
+					});
+				},
+				scatterplot: function(x, y, ctx, { label = "" }) {
+					return Chart.Scatter(ctx, {
+						data: {
+							datasets: [
+								{
+									label,
+									data: x.map((xval, i) => {
+										return { x: xval, y: y[i] };
+									})
+								}
+							]
+						}
+					});
+				}
+			};
 			async function getData() {
 				return await fetch("/covid/data").then(r => r.json());
 			}
+			async function getDataProgression(country = null) {
+				return await fetch(
+					"/covid/data/progression" +
+						((country && "/" + country) || "")
+				).then(res => res.json());
+			}
 			async function updateRawTable(data) {
-				function createColumnEl(column) {
+				function createColumnEl(column, className = "") {
 					var el = document.createElement("div");
 					el.innerText = column;
-					el.className = "col"; //"col-" + 24 / data.columns.length;
+					el.className = "col " + className; //"col-" + 24 / data.columns.length;
 					return el;
 				}
+				var stats = getDataStats(data);
+				//updateStatsTable(stats);
 				var table_container = document.querySelector("#raw_table");
 				var header_container = table_container.querySelector(
 					"div#head"
@@ -59,12 +181,171 @@
 					var row_container = document.createElement("div");
 					row_container.className = "row";
 					for (column in row) {
-						row_container.appendChild(createColumnEl(row[column]));
+						var className = "";
+						if (column in stats) {
+							var normal_range = [
+								stats[column].mean - stats[column].sd,
+								stats[column].mean + stats[column].sd
+							];
+							if (row[column] < normal_range[0])
+								className = "col-success";
+							else if (
+								row[column] > normal_range[0] &&
+								row[column] < normal_range[1]
+							)
+								className = "col-warning";
+							else className = "col-danger";
+						}
+						row_container.appendChild(
+							createColumnEl(row[column], className)
+						);
 					}
 					body_container.appendChild(row_container);
 				});
+				var cases_graph_data = data.rows.filter(r => r.ActiveCases > 0);
+				/*graph.bar(
+					cases_graph_data.map(r => r.Country),
+					cases_graph_data.map(r => r.ActiveCases),
+					document.querySelector("canvas#totalCases").getContext("2d")
+				);*/
 				table_container.appendChild(header_container);
 				table_container.appendChild(body_container);
+			}
+			function drawProjectionGraph(progression_stats, start, column, canvas_selector) {
+				var project = {
+					linear: (stats, x) => stats[0] * x + stats[1],
+					exponential: (stats, x) =>
+						stats[0] * Math.pow(Math.E, stats[1] * x)
+					// Not working currently
+					/*logarithmic: (stats, x) =>
+						stats[0] + stats[1] * Math.log(x),
+					power: (stats, x) => stats[0] * Math.pow(x, stats[1])*/
+					// Not accurate enough yet, needs more info to not be too large
+					/*polynomial: (stats, x) => {
+						var total = 0;
+						stats.forEach((stat, i) => {
+							total += stat * Math.pow(x, stats.length - i);
+						});
+						return total;
+					}*/
+				};
+				var stats = progression_stats.find(
+					stat => stat[0] == column
+				)[1];
+				var lines = Object.keys(project);
+
+				var projection_start = 0;
+				// Records started too long ago, begin graph 5 days ago instead of at record start
+				if ((Date.now() - start) / day > 5) {
+					projection_start = ((Date.now() - 5 * day - start) / day)
+				}
+				var Xs = Array(PROGRESSION_DAYS)
+					.fill(0)
+					.map((e, i) => (day / PROGRESSION_INTERVAL) * i + projection_start);
+				lines = lines.map(line => [
+					Xs.map(e => new Date(start + e * day).toDateString()),
+					Xs.map(x => project[line](stats[line], x))
+				]);
+				graph.lines(
+					lines,
+					document.querySelector(canvas_selector).getContext("2d"),
+					{
+						labels: Object.keys(project),
+						xLabels: lines[0][0].map(x =>
+							new Date(start + x * day).toDateString()
+						)
+					}
+				);
+			}
+			function getDataStats(data) {
+				function getVariance(rows, column, mean) {
+					var variance = 0;
+					for (row of rows) {
+						variance += Math.pow(mean - row[column], 2);
+					}
+					return variance / (rows.length - 1);
+				}
+				function getMean(rows, column) {
+					var total = 0;
+					for (row of rows) {
+						total += row[column];
+					}
+					return total / rows.length;
+				}
+				var stats = {};
+				for (column of data.columns) {
+					if (typeof data.rows[0][column] != "number") continue;
+					var sd = 0,
+						variance = 0,
+						mean = getMean(data.rows, column),
+						n = data.rows.length;
+					// variance and sd before outliers removed
+					var large_variance = getVariance(data.rows, column, mean);
+					var large_sd = Math.sqrt(large_variance);
+
+					// get mean, variance after outliers removed
+					mean = getMean(
+						data.rows.filter(
+							r =>
+								r[column] > mean - 2 * large_sd &&
+								r[column] < mean + 2 * large_sd
+						),
+						column
+					);
+					variance = getVariance(
+						data.rows.filter(
+							r =>
+								r[column] > mean - 2 * large_sd &&
+								r[column] < mean + 2 * large_sd
+						),
+						column,
+						mean
+					);
+					sd = Math.sqrt(variance);
+					stats[column] = {
+						mean,
+						variance,
+						sd,
+						normal_range: [mean - 2 * sd, mean + 2 * sd]
+							.map(n => n.toFixed(2))
+							.join(",")
+					};
+				}
+				return stats;
+			}
+			function updateStatsTable(stats) {
+				function createHeaders(headers) {
+					var header_row = document.createElement("div");
+					header_row.className = "row";
+					headers.unshift("");
+					for (header of headers) {
+						header_row.innerHTML += `<div class="col">${header}</div>`;
+					}
+					container.appendChild(header_row);
+				}
+				var container = document.querySelector("div#raw_table #stats");
+				container.innerHTML = "";
+				var headers_created = false;
+				// columns
+				for (row in stats) {
+					var stat_keys = Object.keys(stats[column]);
+					if (!headers_created) {
+						headers_created = true;
+						createHeaders(stat_keys);
+					}
+					var row_el = document.createElement("div");
+					row_el.className = "row";
+					row_el.innerHTML += `<div class="col">${row}</div>`;
+					for (stat of stat_keys) {
+						row_el.innerHTML += `<div class="col">${stats[row][stat]}</div>`;
+					}
+					container.appendChild(row_el);
+				}
+			}
+			async function updateProgressionGraph() {
+				var [canada_stats, stats] = await Promise.all([getDataProgression("Canada"), getDataProgression()])
+				drawProjectionGraph(stats.analysis, stats.start, "TotalCases", "#totalCases");
+				drawProjectionGraph(canada_stats.analysis, canada_stats.start, "ActiveCases", "#totalCasesCanada");
 			}
 			function sortBy(column) {
 				if (column in sort) {
@@ -77,7 +358,6 @@
 
 				updateRawTable(data);
 			}
-
 			async function init() {
 				function registerHooks() {
 					document
@@ -92,6 +372,7 @@
 				registerHooks();
 				data = await getData();
 				updateRawTable(data);
+				updateProgressionGraph();
 			}
 			init();
 		</script>
