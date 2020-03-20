@@ -49,7 +49,7 @@ function getTableValues($, table_selector) {
 	var columns = getColumns();
 	return { columns, rows: getRows(columns) };
 }
-const TABLE_SELECTOR = "table#main_table_countries";
+const TABLE_SELECTOR = "table#main_table_countries_today";
 async function fetchData() {
 	var $ = await get$();
 	return await getTableValues($, TABLE_SELECTOR);
