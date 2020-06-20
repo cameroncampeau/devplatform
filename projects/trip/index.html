@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <link
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+    crossorigin="anonymous"
+  />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <body class="bg-light">
+    <div class="bg-dark text-light py-3 px-3 border-bottom">
+      <h2>Cottage Trip 2020</h2>
+    </div>
+    <div class="container bg-white p-4">
+      <h1 class="d-inline mr-2">Dates</h1>
+      <small class="d-inline-block text-muted">
+        *Yes = I can make it<br />*No = I can't make it
+      </small>
+      <div class="date-list mt-2"></div>
+      <div class="add-date mt-4">
+        <h4 class="mb-3">Add another date</h4>
+        <div class="start d-inline-block">
+          <label for="start">Start</label>
+          <input type="date" id="start" />
+        </div>
+        <div class="end d-inline-block">
+          <label for="end">End</label>
+          <input type="date" id="end" />
+        </div>
+        <button id="addDate" class="btn btn-primary" type="submit">
+          Add Date
+        </button>
+      </div>
+    </div>
+  </body>
+  <script>
+    function getUser() {
+      var user = localStorage.getItem("tripplanner-user");
+      if (!user) {
+        user = prompt("What is your name?");
+        localStorage.setItem("tripplanner-user", user);
+      }
+      return user;
+    }
+    var dates = [{ start: "2020-07-03", end: "2020-07-06", votes: 2 }];
+    var user = getUser();
+    async function getDates() {
+      return (await fetch("./date").then((res) => res.json())).dates;
+    }
+    async function refreshDateList() {
+      function addDate({ start, end, creator, votes, nays }) {
+        function toDateString(date_input_value_string) {
+          return new Date(
+            new Date(date_input_value_string).getTime() + 1000 * 60 * 60 * 24
+          )
+            .toDateString()
+            .substring(0, 10); // Add one day b/c date constructor for strings is bizzare
+        }
+        var voted = !!votes.find((vote) => vote == user);
+        var vote_nay = !!nays.find((nay) => nay == user);
+        $container.innerHTML += `
+            <div class="clearfix py-3 border-bottom" data-start="${start}" data-end="${end}"> 
+              <h5 class="d-inline-block mr-2">${toDateString(
+                start
+              )} - ${toDateString(
+          end
+        )}</h5> <small class="align-top"><i class="fa fa-thumbs-up text-success mr-1"></i>${
+          votes.length
+        } <i class="fa fa-thumbs-down text-danger mr-1"></i>${
+          nays.length
+        }</small>
+              <div class="mt-2">
+                <button class="btn btn${
+                  vote_nay ? "" : "-outline"
+                }-danger vote-no" ${
+          vote_nay ? "disabled" : ""
+        }><i class="fa fa-thumbs-down mr-2"></i>No</button>  
+                <button class="btn btn${
+                  voted ? "" : "-outline"
+                }-success vote-yes" ${
+          voted ? "disabled" : ""
+        }><i class="fa fa-thumbs-up mr-2"></i>Yes</button>  
+              </div>
+            </div>
+
+        `;
+      }
+      var dates = await getDates();
+      dates = dates.sort(
+        (date_a, date_b) => new Date(date_a.start) - new Date(date_b).start
+      );
+      var $container = document.querySelector(".date-list");
+      $container.innerHTML = "";
+      dates.forEach((date) => addDate(date));
+    }
+    async function addDate(start, end) {
+      var start_date = new Date(start);
+      var end_date = new Date(end);
+
+      var dates = await getDates();
+
+      for (let date of dates) {
+        if (date.start == start && date.end == end) return false;
+        ("");
+      }
+
+      try {
+        await fetch("date", {
+          method: "POST",
+          body: JSON.stringify({ start, end, user }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        refreshDateList();
+      } catch (e) {}
+    }
+    async function voteForDate(start, end, nay = false) {
+      try {
+        await fetch(`date/${start}/${end}/${nay ? "nay" : "vote"}`, {
+          method: "POST",
+          body: JSON.stringify({ user }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        refreshDateList();
+      } catch (e) {}
+    }
+
+    function onDateAdd(e) {
+      var start_date = document.querySelector("#start").value;
+      var end_date = document.querySelector("#end").value;
+    }
+    document.querySelector("#addDate").addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      var $start = document.querySelector("#start");
+      var $end = document.querySelector("#end");
+      var start = $start.value;
+      var end = $end.value;
+      if (!start) return alert("Select a start date");
+      if (!end) return alert("Select an end date");
+      await addDate(start, end);
+      $start.value = "";
+      $end.value = "";
+    });
+
+    document.querySelector("#start").addEventListener("change", async (e) => {
+      var start_date = new Date(
+        new Date(e.target.value).getTime() + 1000 * 60 * 60 * 24
+      );
+      var suggested_end_date = new Date(
+        start_date.getTime() + 2 * 1000 * 60 * 60 * 24
+      );
+      document.querySelector("#end").value =
+        suggested_end_date.getFullYear() +
+        "-" +
+        ("0" + (suggested_end_date.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + suggested_end_date.getDate()).slice(-2);
+    });
+
+    document
+      .querySelector(".date-list")
+      .addEventListener("click", async (e) => {
+        if (e.target.disabled) return;
+        if (e.target.classList.contains("vote-yes")) {
+          await voteForDate(
+            e.target.parentElement.parentElement.dataset.start,
+            e.target.parentElement.parentElement.dataset.end
+          );
+        } else if (e.target.classList.contains("vote-no")) {
+          await voteForDate(
+            e.target.parentElement.parentElement.dataset.start,
+            e.target.parentElement.parentElement.dataset.end,
+            true
+          );
+        }
+      });
+    refreshDateList();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/js/all.min.js"></script>
+</html>
