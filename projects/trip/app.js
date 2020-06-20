@@ -33,6 +33,7 @@ route.post("/date/:start/:end/nay", async (req, res) => {
     if (!date) return res.status(404).json("Date not found");
     date.votes = date.votes.filter((voter) => voter != user);
     date.nays = Array.from(new Set(date.nays).add(user)); //only allow user vote one time
+    if (date.votes.length === 0) dates = dates.filter((d) => d !== date);
     await saveDates(dates);
     return res.json({ date });
   } catch (e) {
