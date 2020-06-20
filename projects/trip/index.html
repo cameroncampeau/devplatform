@@ -92,7 +92,7 @@
       }
       var dates = await getDates();
       dates = dates.sort(
-        (date_a, date_b) => new Date(date_a.start) - new Date(date_b).start
+        (date_a, date_b) => new Date(date_a.start) - new Date(date_b.start)
       );
       var $container = document.querySelector(".date-list");
       $container.innerHTML = "";
