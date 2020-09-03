@@ -7,7 +7,7 @@ module.exports = {
   dev: {
     // Paths
     assetsSubDirectory: "static",
-    assetsPublicPath: "/",
+    assetsPublicPath: "/budget",
     proxyTable: {
       "/budget/api/": {
         target: "https://localhost",
