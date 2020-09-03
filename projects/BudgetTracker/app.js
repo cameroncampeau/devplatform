@@ -23,6 +23,14 @@ function getGoals() {
   return db.getCollection(COLLECTION_NAME).find();
 }
 
+var path = require("path");
+route.use(
+  "/static",
+  express.static(path.resolve(__dirname + "/public/dist/static"))
+);
+route.get("/", (req, res) =>
+  res.sendFile(path.resolve(__dirname + "/public/dist/index.html"))
+);
 route.use(express.json());
 route.post("/api/goal", (req, res) => {
   if (!req.body.name || !req.body.target)
