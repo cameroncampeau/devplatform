@@ -26,6 +26,11 @@
         </div>
       </form>
     </div>
+      <div id="totals">
+        <h4>Account Saving Totals</h4>
+        Savings: {{total_savings}}
+        Chequeing: {{total_chequeing}}
+      </div>
     <div class="row">
       <div v-for="goal in goals" v-bind:key="goal.name" class="col-12 col-md-6 col-lg-4 py-3">
         <goal v-bind="goal" v-on:change="syncGoals"></goal>
@@ -45,6 +50,9 @@ export default {
     return {
       goals: [],
       create_menu_open: false,
+
+      total_chequeing: 0,
+      total_savings: 0,
     };
   },
   methods: {
@@ -58,10 +66,22 @@ export default {
       });
       this.syncGoals();
     },
+    setGoalSavingTotals() {
+      this.total_savings = 0;
+      this.total_chequeing = 0;
+      for (const goal of this.goals) {
+        console.log(goal);
+        for (const saving of goal.saved) {
+          if (saving.account == 'Savings') this.total_savings += saving.amount;
+          else this.total_chequeing += saving.amount;
+        }
+      }
+    },
     async syncGoals() {
       this.goals = (
         await fetch('/budget/api/goal').then(res => res.json())
       ).goals;
+      this.setGoalSavingTotals();
     },
   },
   mounted() {
