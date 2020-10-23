@@ -26,6 +26,7 @@
               to {{save.account}} on
               {{new Date(save.date).toLocaleString()}}
             </small>
+            <i class="fa fa-times float-right text-danger" v-on:click="removeSaving(save)"></i>
           </p>
         </div>
       </div>
@@ -82,6 +83,14 @@ export default {
       if (!confirm(`Are you sure you want to delete ${this.name} ?`)) return;
       fetch(`/budget/api/goal/${this._id}`, { method: 'DELETE' });
       this.$emit('change', 'removed');
+    },
+    async removeSaving(saving) {
+      await fetch(`/budget/api/goal/${this.name}/save`, {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ amount, account }),
+      });
+      this.$emit('change');
     },
   },
   mounted() {},
