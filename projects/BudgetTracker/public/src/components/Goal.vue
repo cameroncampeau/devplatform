@@ -84,7 +84,7 @@ export default {
       fetch(`/budget/api/goal/${this._id}`, { method: 'DELETE' });
       this.$emit('change', 'removed');
     },
-    async removeSaving(saving) {
+    async removeSaving({ amount, account }) {
       await fetch(`/budget/api/goal/${this.name}/save`, {
         method: 'DELETE',
         headers: { 'content-type': 'application/json' },
