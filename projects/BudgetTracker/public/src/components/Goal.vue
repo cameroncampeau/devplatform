@@ -21,13 +21,17 @@
             <option>TFSA</option>
           </select>
           <button class="btn btn-primary" type="submit">Deposit</button>
-          <button class="btn btn-light" type="submit">Withdraw</button>
+          <button class="btn btn-light" v-on:click="withdraw" type="submit">
+            Withdraw
+          </button>
         </div>
       </form>
       <div id="saved" class="d-block border-top border-bottom my-2 py-3">
         <div v-for="save in saved" v-bind:key="save.date">
           <p class="ml-4 my-0">
-            <b>${{ save.amount }}</b>
+            <b v-bind:class="save.amount > 0 ? 'text-success' : 'text-danger'"
+              >${{ Math.abs(save.amount) }}</b
+            >
             <small>
               {{ save.amount > 0 ? "to" : "from" }} {{ save.account }} on
               {{ new Date(save.date).toLocaleString() }}
@@ -108,6 +112,20 @@ export default {
         body: JSON.stringify({ amount, account }),
       });
       this.$emit('change');
+    },
+    async withdraw(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const amount = parseFloat(this.$el.querySelector('#amount').value);
+      const $account = this.$el.querySelector('#account');
+      const account = $account.options[$account.selectedIndex].innerHTML;
+      await fetch(`/budget/api/goal/${this.name}/withdraw`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ amount, account }),
+      });
+      this.$emit('change', 'saved');
+      this.$el.querySelector('form#save').reset();
     },
   },
   mounted() {},
