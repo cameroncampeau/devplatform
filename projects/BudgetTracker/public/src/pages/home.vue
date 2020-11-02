@@ -1,3 +1,10 @@
+<style scoped>
+@media screen and (min-width: 1400px) {
+  .container {
+    max-width: 1400px;
+  }
+}
+</style>
 <template>
   <section class="container py-4">
     <div v-if="!is_logged_in" id="logIn">

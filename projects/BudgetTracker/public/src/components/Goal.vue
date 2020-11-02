@@ -1,45 +1,62 @@
 <template>
   <article class="p-3 shadow bg-white">
     <h4 class="mb-3">
-      {{name}} (${{target}})
-      <button
-        class="btn btn-sm btn-danger float-right"
-        v-on:click="removeGoal"
-      >Delete</button>
+      {{ name }} (${{ target }})
+      <button class="btn btn-sm btn-danger float-right" v-on:click="removeGoal">
+        Delete
+      </button>
     </h4>
     <div class="saved">
       <form id="save" v-on:submit.prevent="addSaving">
         <div class="input-group">
-          <input id="amount" type="number" class="form-control" placeholder="$" />
+          <input
+            id="amount"
+            type="number"
+            class="form-control"
+            placeholder="$"
+          />
           <select id="account">
             <option>Chequeing</option>
-            <option>Savings</option>
+            <option selected>Savings</option>
+            <option>TFSA</option>
           </select>
-          <button class="btn btn-primary" type="submit">Add saving</button>
+          <button class="btn btn-primary" type="submit">Deposit</button>
+          <button class="btn btn-light" type="submit">Withdraw</button>
         </div>
       </form>
       <div id="saved" class="d-block border-top border-bottom my-2 py-3">
         <div v-for="save in saved" v-bind:key="save.date">
           <p class="ml-4 my-0">
-            <b>${{save.amount}}</b>
+            <b>${{ save.amount }}</b>
             <small>
-              to {{save.account}} on
-              {{new Date(save.date).toLocaleString()}}
+              {{ save.amount > 0 ? "to" : "from" }} {{ save.account }} on
+              {{ new Date(save.date).toLocaleString() }}
             </small>
-            <i class="fa fa-times float-right text-danger" v-on:click="removeSaving(save)"></i>
+            <i
+              class="fa fa-times float-right text-danger"
+              v-on:click="removeSaving(save)"
+            ></i>
           </p>
         </div>
       </div>
       <div class="progress" style="height:3em">
         <div
           class="progress-bar"
-          v-bind:class="{'bg-success': progressPercent == 100, 'bg-info': progressPercent > 75 && progressPercent < 100, 'bg-warning text-dark': progressPercent < 75 && progressPercent > 30, 'bg-danger text-dark': progressPercent <= 30}"
+          v-bind:class="{
+            'bg-success': progressPercent == 100,
+            'bg-info': progressPercent > 75 && progressPercent < 100,
+            'bg-warning text-dark':
+              progressPercent < 75 && progressPercent > 30,
+            'bg-danger text-dark': progressPercent <= 30
+          }"
           role="progressbar"
           v-bind:style="`width: ${progressPercent}%;overflow:visible`"
           aria-valuenow="25"
           aria-valuemin="0"
           aria-valuemax="100"
-        >Saved ${{totalSaved}} of ${{target}} ({{progressPercent}}%)</div>
+        >
+          Saved ${{ totalSaved }} of ${{ target }} ({{ progressPercent }}%)
+        </div>
       </div>
     </div>
   </article>
@@ -97,7 +114,7 @@ export default {
 };
 </script>
 
- <style>
+<style>
 #saved {
   overflow: auto;
   max-height: 6em;
