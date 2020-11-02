@@ -45,7 +45,8 @@
       </div>
       <div id="totals">
         <h4>Account Saving Totals</h4>
-        Savings: {{ total_savings }} Chequeing: {{ total_chequeing }}
+        Savings: {{ total_savings }} Chequeing: {{ total_chequeing }} TFSA:
+        {{ total_tfsa }}
       </div>
       <div class="row">
         <div
@@ -61,11 +62,11 @@
 </template>
 
 <script>
-import GoalComponent from '@/components/Goal';
+import GoalComponent from "@/components/Goal";
 
 export default {
   components: {
-    Goal: GoalComponent,
+    Goal: GoalComponent
   },
   data() {
     return {
@@ -74,30 +75,31 @@ export default {
 
       total_chequeing: 0,
       total_savings: 0,
-      is_logged_in: false,
+      total_tfsa: 0,
+      is_logged_in: false
     };
   },
   methods: {
     async createGoal() {
-      const name = this.$el.querySelector('#goalName').value;
-      const target = this.$el.querySelector('#goalTarget').value;
-      await fetch('/budget/api/goal', {
-        method: 'POST',
+      const name = this.$el.querySelector("#goalName").value;
+      const target = this.$el.querySelector("#goalTarget").value;
+      await fetch("/budget/api/goal", {
+        method: "POST",
         body: JSON.stringify({ name, target }),
-        headers: { 'content-type': 'application/json' },
+        headers: { "content-type": "application/json" }
       });
       this.syncGoals();
     },
     async getLoginStatus() {
-      return await fetch('/budget/api/login').then(res => res.json());
+      return await fetch("/budget/api/login").then(res => res.json());
     },
     async login() {
-      const username = this.$el.querySelector('#username').value;
-      const password = this.$el.querySelector('#password').value;
-      await fetch('/budget/api/login', {
-        method: 'POST',
+      const username = this.$el.querySelector("#username").value;
+      const password = this.$el.querySelector("#password").value;
+      await fetch("/budget/api/login", {
+        method: "POST",
         body: JSON.stringify({ username, password }),
-        headers: { 'content-type': 'application/json' },
+        headers: { "content-type": "application/json" }
       });
       this.is_logged_in = true;
       this.syncGoals();
@@ -108,22 +110,23 @@ export default {
       for (const goal of this.goals) {
         console.log(goal);
         for (const saving of goal.saved) {
-          if (saving.account === 'Savings') this.total_savings += saving.amount;
+          if (saving.account === "Savings") this.total_savings += saving.amount;
+          else if (saving.account === "TFSA") this.total_tfsa += saving.amount;
           else this.total_chequeing += saving.amount;
         }
       }
     },
     async syncGoals() {
       this.goals = (
-        await fetch('/budget/api/goal').then(res => res.json())
+        await fetch("/budget/api/goal").then(res => res.json())
       ).goals;
       this.setGoalSavingTotals();
-    },
+    }
   },
   async mounted() {
     this.is_logged_in = await this.getLoginStatus();
     if (this.is_logged_in) this.syncGoals();
-  },
+  }
 };
 </script>
 
