@@ -1,5 +1,4 @@
-window.ImageGenerator = function(key) {
-	
+function ImageGenerator(key) {
 	const size = { w: 200, h: 200},
 		pixel_size = {w:20, h: 20},
 		color_str_length = 6,
