@@ -1,7 +1,16 @@
 # Dev Platform
-This is a simple set of tools I've built to allow for rapid prototyping and development of my personal projects. 
+Welcome to my development platform. It's a simple set of tools I've built to allow for rapid prototyping and development of my personal projects. Some of the projects I've built are also included in this repo, see below for details. 
 
-There's 3 main utilities:
+# How it works
+New projects can be added by creating a folder in the "projects" directory that includes a file named project_config.js. This config file must include a load() method that can be called to load the project. By default, any folder in the projects directory with a project_config.js file will be loaded when the app starts. Projects can be started indivually by including the project name in the command line arguments.
+
+Example:
+```
+node app.js covid // Start the project in the "covid" project folder
+```
+
+
+The platform also includes 3 main utilities:
 
 **DefaultDB**: This is a basic, disk-based database. It acts as a wrapper for diskdb(https://www.npmjs.com/package/diskdb), allowing for easier usage. 
 
@@ -17,7 +26,7 @@ Some of the projects I've worked on are available in the projects directory. Man
 ## Some highlights:
 
 ### BudgetTracker
-This was a project I created to address one of my own needs. I wanted a tool to keep track of the money I've saved for each of my savings goals. This tool allows users to do exactly that - create a savings goal and record the movement of the money associated with it. 
+This was a project I created to address one of my own needs. I wanted a tool to keep track of the money I've saved for each of my savings goals. This tool allows users to do exactly that - create a savings goal and record the movement of the money associated with it (deposits, withdrawls, transfers,etc).
 - Included: VueJS, Express 
 
 
@@ -26,7 +35,8 @@ This was an app I designed to track COVID case numbers. My goal with this projec
 - Included: Cheerio, Express, ChartJS
 
 ### Find Dog
-This is another project I created to address one of my own needs. I was looking to adopt a dog, and wanted an easier place to keep track of the available dogs from the Toronto Humane Society shelter. The app scrapes available dogs from the Toronto Humane Society website, and allows users to filter them and favourite the ones they like. This app was built very quickly and roughly to provide functionality first, it is not an accurate representation of my normal work. 
+This is another project I created to address one of my own needs. I was looking to adopt a dog, and wanted an easier place to keep track of the available dogs from the Toronto Humane Society shelter. The app scrapes available dogs from the Toronto Humane Society website, and allows users to filter them and favourite the ones they like. 
+- This app was built very quickly and roughly to provide functionality first, it is not an accurate representation of my normal work. 
 
 ### ImageGen
 This was a project inspired by Github's randomized avatars. Its a simple module that can be used to generate a random 20x20 pixel image and display it on an HTML5 canvas. It relies on the Stanford Javascript Crypto Library to generate random bytes. 
