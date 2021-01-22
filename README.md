@@ -1,7 +1,7 @@
 # Dev Platform
 Welcome to my development platform. It's a simple set of tools I've built to allow for rapid prototyping and development of my personal projects. Some of the projects I've built are also included in this repo, see below for details. 
 
-# How it works
+## How it works
 New projects can be added by creating a folder in the "projects" directory that includes a file named project_config.js. This config file must include a load() method that can be called to load the project. By default, any folder in the projects directory with a project_config.js file will be loaded when the app starts. Projects can be started indivually by including the project name in the command line arguments.
 
 Example:
