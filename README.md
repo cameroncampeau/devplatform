@@ -29,7 +29,6 @@ Some of the projects I've worked on are available in the projects directory. Man
 This was a project I created to address one of my own needs. I wanted a tool to keep track of the money I've saved for each of my savings goals. This tool allows users to do exactly that - create a savings goal and record the movement of the money associated with it (deposits, withdrawls, transfers,etc).
 - Included: VueJS, Express 
 
-
 ### COVID Tracker
 This was an app I designed to track COVID case numbers. My goal with this project was apply my knowledge of regression analsyis to a real-life scenario. I was also interested to do more work with web scraping, and decided to retrieve official numbers by scraping available resources. 
 - Included: Cheerio, Express, ChartJS
@@ -48,6 +47,9 @@ This was an app I built to get more experience working with filesystems. It allo
 - Included: Express, Node Filesystem, VueJS 
 - Note: This app is NOT secure. It was built only as a POC and learning opportunity. 
 
+### Media Share
+I built this app to create a simple Netflix-like interface for locally stored movies. My goal for this project was to get experience working with HTML5 videos, but I ended up expanding the project's scope to include backend processing of movies to extract thumnbnails. Due to the focus being on working with videos, the frontend is otherwise very basic and written in vanilla JS. 
+- Included: Express, ffmpeg, HTML5 video
 
 ### Music Download
 I designed this app to explore the functionality of ffmpeg, a library for converting video files to audio. In this app, I integrated with the Youtube API to allow users to download videos as MP3s given a video URL. 
